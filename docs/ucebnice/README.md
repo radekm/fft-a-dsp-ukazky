@@ -33,8 +33,8 @@ učebnice jde pomaleji a po menších krocích.
 | 8  | [Prosakování](08-prosakovani.md) | Okna a prosakování |
 | 9  | [Okna](09-okna.md) | Okna a prosakování |
 | 10 | [Doplnění nulami a rozlišení](10-doplneni-nulami-a-rozliseni.md) | Okna a prosakování |
-| 11 | Vzorkování a aliasing | Vzorkování a aliasing |
-| 12 | Rekonstrukce ze vzorků | Vzorkování a aliasing |
+| 11 | [Vzorkování a aliasing](11-vzorkovani-a-aliasing.md) | Vzorkování a aliasing |
+| 12 | [Rekonstrukce ze vzorků](12-rekonstrukce.md) | Vzorkování a aliasing |
 | 13 | Konvoluce a FIR filtry | Filtry |
 | 14 | IIR filtr (biquad) | Filtry |
 | 15 | Shrnutí | – |

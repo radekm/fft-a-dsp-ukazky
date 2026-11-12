@@ -177,7 +177,7 @@ ukáže dvě čáry s výškou 1,00 (u 50 a 50,25 Hz). Při N = 256 (biny po
 
 ## Kam dál
 
-- Další lekce: 11. Vzorkování a aliasing (připravuje se).
+- Další lekce: [11. Vzorkování a aliasing](11-vzorkovani-a-aliasing.md).
 - Předchozí lekce: [9. Okna](09-okna.md).
 - Podrobnější text k záložce: [Okna a prosakování](../02-okna-a-prosakovani.md).
 - V kódu: `src/dsp/window.rs`, funkce `zero_pad` (doplnění nulami)

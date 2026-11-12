@@ -103,8 +103,8 @@ Pro snímky se mění výchozí hodnoty jen dočasně, tyto změny se necommituj
 - [x] 8. Prosakování
 - [x] 9. Okna
 - [x] 10. Doplnění nulami a rozlišení
-- [ ] 11. Vzorkování a aliasing
-- [ ] 12. Rekonstrukce ze vzorků
+- [x] 11. Vzorkování a aliasing
+- [x] 12. Rekonstrukce ze vzorků
 - [ ] 13. Konvoluce a FIR filtry
 - [ ] 14. IIR filtr (biquad)
 - [ ] 15. Shrnutí
