@@ -57,6 +57,14 @@ egui_plot = { version = "=0.38.0", default-features = false }
 - Každý netriviální algoritmus má český komentář, který vysvětluje, co a proč
   se děje (ideálně s odkazem na vzorec).
 - Žádný `unsafe` kód.
+- Logování je strukturované (crate `tracing`): proměnné hodnoty se předávají
+  jako pojmenovaná pole, ne vložené do textu zprávy. Zpráva je krátký neměnný
+  anglický text.
+  - Správně: `info!(fft_size, sample_rate_hz, "spectrum computed")`
+  - Špatně: `info!("spectrum computed for {fft_size} samples")`
+- Log se zapisuje jako JSON (jeden objekt na řádek) do adresáře `logs/`
+  a v čitelné podobě na standardní chybový výstup. Události, které mohou
+  nastat v každém snímku, mají úroveň `debug`.
 - Jen syntetické signály; práce se zvukem (mikrofon, přehrávání, WAV) není
   součástí první verze.
 

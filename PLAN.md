@@ -14,6 +14,7 @@ Program je učební pomůcka. Přednost má srozumitelnost před výkonem a úpl
 - Jen syntetické signály generované v programu (bez mikrofonu, přehrávání a WAV).
 - Povolené crates: viz `AGENTS.md`. Grafy kreslí `egui_plot`.
 - Texty v uživatelském rozhraní jsou česky.
+- Logování je strukturované (pojmenovaná pole, JSON do `logs/`).
 - Délka FFT je mocnina dvou (radix-2); kratší signál se doplní nulami.
 
 ## Struktura
@@ -26,6 +27,7 @@ src/
     complex.rs     komplexní číslo
     signal.rs      generátory signálů
     fft.rs         DFT (pomalá) a FFT (radix-2), zpětná FFT
+    spectrum.rs    amplituda, decibely a fáze z výsledku FFT
     window.rs      okénkové funkce
     filter.rs      FIR a IIR filtry, frekvenční odezva
     sampling.rs    převzorkování, rekonstrukce
@@ -46,14 +48,14 @@ docs/              česká vysvětlení k jednotlivým tématům
 - [x] Nastavení `cargo fmt`, `clippy`, `test`.
 
 ### Fáze 1 – signály a spektrum
-- [ ] Vlastní typ komplexního čísla.
-- [ ] Generátor: součet několika složek (sinus, obdélník, pila, trojúhelník),
+- [x] Vlastní typ komplexního čísla.
+- [x] Generátor: součet několika složek (sinus, obdélník, pila, trojúhelník),
       u každé frekvence, amplituda a fáze; volitelně bílý šum a stejnosměrná složka.
-- [ ] Pomalá DFT podle definice a rychlá FFT (radix-2), zpětná FFT.
-- [ ] Graf časového průběhu.
-- [ ] Graf spektra: amplituda (lineárně i v dB) a fáze; osa ve frekvenci i v binech.
-- [ ] Volba vzorkovací frekvence a délky FFT.
-- [ ] Testy: FFT = DFT, zpětná FFT vrátí signál, špička sinusovky ve správném binu.
+- [x] Pomalá DFT podle definice a rychlá FFT (radix-2), zpětná FFT.
+- [x] Graf časového průběhu.
+- [x] Graf spektra: amplituda (lineárně i v dB) a fáze; osa ve frekvenci i v binech.
+- [x] Volba vzorkovací frekvence a délky FFT.
+- [x] Testy: FFT = DFT, zpětná FFT vrátí signál, špička sinusovky ve správném binu.
 
 ### Fáze 2 – okna a prosakování
 - [ ] Okna: obdélníkové, Hann, Hamming, Blackman.
