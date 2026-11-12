@@ -27,8 +27,8 @@ učebnice jde pomaleji a po menších krocích.
 | 2  | [Sinusovka](02-sinusovka.md) | Vzorkování a aliasing |
 | 3  | [Skládání signálů a myšlenka spektra](03-skladani-a-spektrum.md) | Signály a spektrum |
 | 4  | [DFT jako měření shody](04-dft-mereni-shody.md) | Signály a spektrum |
-| 5  | DFT: komplexní čísla a biny | Signály a spektrum |
-| 6  | FFT a proč je rychlá | Signály a spektrum |
+| 5  | [DFT – komplexní čísla a biny](05-dft-komplexni-cisla-a-biny.md) | Signály a spektrum |
+| 6  | [FFT a proč je rychlá](06-fft.md) | Signály a spektrum |
 | 7  | Decibely a fáze ve spektru | Signály a spektrum |
 | 8  | Prosakování | Okna a prosakování |
 | 9  | Okna | Okna a prosakování |
