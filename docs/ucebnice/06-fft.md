@@ -233,7 +233,7 @@ zrcadlo (opačný úhel).
 
 ## Kam dál
 
-- Další lekce: 7. Decibely a fáze ve spektru (připravuje se).
+- Další lekce: [7. Decibely a fáze ve spektru](07-decibely-a-faze.md).
 - Předchozí lekce: [5. DFT – komplexní čísla a biny](05-dft-komplexni-cisla-a-biny.md).
 - V kódu: `src/dsp/fft.rs` – `bit_reverse_permutation` a `reverse_bits`
   (přerovnání), `butterfly_stage` (jedno patro motýlků), `transform`

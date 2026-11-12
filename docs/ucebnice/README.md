@@ -29,8 +29,8 @@ učebnice jde pomaleji a po menších krocích.
 | 4  | [DFT jako měření shody](04-dft-mereni-shody.md) | Signály a spektrum |
 | 5  | [DFT – komplexní čísla a biny](05-dft-komplexni-cisla-a-biny.md) | Signály a spektrum |
 | 6  | [FFT a proč je rychlá](06-fft.md) | Signály a spektrum |
-| 7  | Decibely a fáze ve spektru | Signály a spektrum |
-| 8  | Prosakování | Okna a prosakování |
+| 7  | [Decibely a fáze ve spektru](07-decibely-a-faze.md) | Signály a spektrum |
+| 8  | [Prosakování](08-prosakovani.md) | Okna a prosakování |
 | 9  | Okna | Okna a prosakování |
 | 10 | Doplnění nulami a rozlišení | Okna a prosakování |
 | 11 | Vzorkování a aliasing | Vzorkování a aliasing |

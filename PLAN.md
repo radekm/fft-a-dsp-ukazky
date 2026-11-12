@@ -99,8 +99,8 @@ Pro snímky se mění výchozí hodnoty jen dočasně, tyto změny se necommituj
 - [x] 4. DFT jako měření shody
 - [x] 5. DFT: komplexní čísla a biny
 - [x] 6. FFT a proč je rychlá
-- [ ] 7. Decibely a fáze ve spektru
-- [ ] 8. Prosakování
+- [x] 7. Decibely a fáze ve spektru
+- [x] 8. Prosakování
 - [ ] 9. Okna
 - [ ] 10. Doplnění nulami a rozlišení
 - [ ] 11. Vzorkování a aliasing
