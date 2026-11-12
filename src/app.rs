@@ -2,6 +2,7 @@
 
 use tracing::info;
 
+use crate::ui::sampling::SamplingTab;
 use crate::ui::spectrum::SpectrumTab;
 use crate::ui::windows::WindowsTab;
 use crate::ui::{self, Tab};
@@ -12,6 +13,7 @@ pub struct App {
     selected_tab: Tab,
     spectrum: SpectrumTab,
     windows: WindowsTab,
+    sampling: SamplingTab,
 }
 
 impl eframe::App for App {
@@ -34,7 +36,7 @@ impl eframe::App for App {
         egui::CentralPanel::default().show(ui, |ui| match self.selected_tab {
             Tab::Spectrum => ui::spectrum::show(ui, &mut self.spectrum),
             Tab::Windows => ui::windows::show(ui, &mut self.windows),
-            Tab::Sampling => ui::sampling::show(ui),
+            Tab::Sampling => ui::sampling::show(ui, &mut self.sampling),
             Tab::Filters => ui::filters::show(ui),
         });
     }

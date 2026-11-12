@@ -65,11 +65,11 @@ docs/              česká vysvětlení k jednotlivým tématům
 - [x] Doplnění nulami (zero-padding) a jeho vliv na vzhled spektra.
 
 ### Fáze 3 – vzorkování a aliasing
-- [ ] „Spojitý“ signál (hustě vzorkovaný) a přes něj vzorky při zvolené
+- [x] „Spojitý“ signál (hustě vzorkovaný) a přes něj vzorky při zvolené
       vzorkovací frekvenci.
-- [ ] Vyznačení Nyquistovy frekvence; alias, který ze vzorků vyjde.
-- [ ] Rekonstrukce signálu ze vzorků (sinc interpolace).
-- [ ] Spektrum před a po podvzorkování.
+- [x] Vyznačení Nyquistovy frekvence; alias, který ze vzorků vyjde.
+- [x] Rekonstrukce signálu ze vzorků (sinc interpolace).
+- [x] Spektrum před a po podvzorkování.
 
 ### Fáze 4 – filtry
 - [ ] FIR: návrh metodou okna (windowed-sinc) – dolní, horní a pásmová propust;

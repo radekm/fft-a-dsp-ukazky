@@ -35,8 +35,9 @@ pub fn bin_frequency(bin: usize, sample_rate_hz: f64, fft_size: usize) -> f64 {
 /// Spektrum reálného signálu je symetrické: bin `N − k` je komplexně sdružený
 /// s binem `k`, takže horní polovina nenese nic nového. Energie každé složky
 /// je ale rozdělená mezi obě poloviny, proto amplitudu násobíme dvěma.
-/// Výjimkou jsou bin 0 (stejnosměrná složka) a bin N/2 (Nyquistova
-/// frekvence), které protějšek nemají.
+/// Výjimkou jsou bin 0 (stejnosměrná složka) a při sudém N bin N/2
+/// (Nyquistova frekvence), které protějšek nemají. Při lichém N padne
+/// N/2 mezi biny, takže protějšek má každý bin kromě nultého.
 ///
 /// `window_sum` je součet koeficientů okna, kterým byl signál vynásoben
 /// (bez okna je to počet vzorků signálu). Sinusovka s amplitudou A dá v FFT
@@ -51,7 +52,7 @@ pub fn one_sided_spectrum(
     let last_bin = n / 2;
     let mut lines = Vec::with_capacity(last_bin + 1);
     for (bin, value) in fft_output.iter().enumerate().take(last_bin + 1) {
-        let has_mirror_bin = bin != 0 && bin != last_bin;
+        let has_mirror_bin = bin != 0 && 2 * bin != n;
         let fold_factor = if has_mirror_bin { 2.0 } else { 1.0 };
         let amplitude = fold_factor * value.magnitude() / window_sum;
         let phase_deg = if amplitude > PHASE_THRESHOLD {
@@ -113,6 +114,18 @@ mod tests {
         // Sinus je kosinus zpožděný o čtvrt periody.
         assert!((lines[50].phase_deg + 90.0).abs() < 1e-6);
         assert!((lines[50].amplitude_db - 20.0 * 0.7f64.log10()).abs() < TOLERANCE);
+    }
+
+    #[test]
+    fn odd_length_keeps_amplitude_of_last_bin() {
+        // N = 5: bin 2 má protějšek v binu 3, amplituda se tedy musí zdvojit.
+        let n = 5;
+        let samples: Vec<f64> = (0..n)
+            .map(|i| (2.0 * std::f64::consts::PI * 2.0 * i as f64 / n as f64).cos())
+            .collect();
+        let lines = one_sided_spectrum(&crate::dsp::fft::dft(&real_to_complex(&samples)), 5.0, 5.0);
+        assert_eq!(lines.len(), 3);
+        assert!((lines[2].amplitude - 1.0).abs() < TOLERANCE);
     }
 
     #[test]

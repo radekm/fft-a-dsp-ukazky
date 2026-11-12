@@ -4,8 +4,8 @@ Interaktivní desktopový program v Rustu (egui), na kterém si lze vyzkoušet
 FFT a digitální zpracování signálu (DSP). Je to učební pomůcka: přednost má
 srozumitelnost před výkonem.
 
-Stav: hotové jsou záložky **Signály a spektrum** a **Okna a prosakování**.
-Ostatní záložky jsou zatím prázdné a přibývají po fázích podle [PLAN.md](PLAN.md). Pravidla pro práci na
+Stav: hotové jsou záložky **Signály a spektrum**, **Okna a prosakování**
+a **Vzorkování a aliasing**. Záložka Filtry je zatím prázdná a přibývají po fázích podle [PLAN.md](PLAN.md). Pravidla pro práci na
 projektu jsou v [AGENTS.md](AGENTS.md).
 
 ## Záložky
@@ -50,6 +50,17 @@ Frekvence se zde zadávají v binech (1 bin = fs/N).
   blízkých frekvencí, nižší postranní laloky menší prosakování.
 - Zapni doplnění nulami ×8: body spektra zhoustnou a je vidět skutečný tvar
   čáry, ale čára se nezúží.
+
+## Co zkusit v záložce Vzorkování a aliasing
+
+- Výchozí sinusovka 5 Hz vzorkovaná 40 Hz: rekonstrukce ze vzorků (modře)
+  přesně kopíruje spojitý signál (šedě).
+- Zvyšuj frekvenci nad 20 Hz (Nyquistova frekvence): rekonstrukce začne
+  ukazovat jinou, nižší sinusovku – alias. Při 33 Hz se signál jeví jako 7 Hz.
+- Nastav frekvenci přesně na fs/2 nebo na fs a sleduj, kam padnou vzorky.
+- Snižuj fs a sleduj, kdy přestane rekonstrukce odpovídat originálu.
+- Přidej obdélník 3 Hz: jeho vyšší harmonické sahají nad fs/2 a po
+  navzorkování se složí zpět do pásma 0 až fs/2.
 
 ## Logování
 

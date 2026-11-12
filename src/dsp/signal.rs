@@ -43,16 +43,23 @@ pub fn generate(spec: &SignalSpec, sample_rate_hz: f64, sample_count: usize) -> 
     let mut samples = Vec::with_capacity(sample_count);
     for index in 0..sample_count {
         let time_s = index as f64 / sample_rate_hz;
-        let mut value = spec.dc_offset;
-        for component in &spec.components {
-            if component.enabled {
-                value += component_value(component, time_s);
-            }
-        }
-        value += spec.noise_amplitude * noise_next(&mut noise_state);
-        samples.push(value);
+        let noise = spec.noise_amplitude * noise_next(&mut noise_state);
+        samples.push(value_at(spec, time_s) + noise);
     }
     samples
+}
+
+/// Hodnota signálu v libovolném čase – takto si představujeme „spojitý“
+/// (analogový) signál před vzorkováním. Šum se zde nepřičítá, protože
+/// generátor šumu dává hodnoty jen postupně, vzorek po vzorku.
+pub fn value_at(spec: &SignalSpec, time_s: f64) -> f64 {
+    let mut value = spec.dc_offset;
+    for component in &spec.components {
+        if component.enabled {
+            value += component_value(component, time_s);
+        }
+    }
+    value
 }
 
 /// Hodnota jedné složky v daném čase.

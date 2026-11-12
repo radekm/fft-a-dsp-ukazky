@@ -11,7 +11,9 @@ use crate::dsp::complex::Complex;
 use crate::dsp::fft::{dft, fft, ifft, real_to_complex};
 use crate::dsp::signal::{Component, SignalSpec, Waveform, generate};
 use crate::dsp::spectrum::{SpectrumLine, one_sided_spectrum};
-use crate::ui::common::{AmplitudeScale, CONTROLS_WIDTH, Y_AXIS_WIDTH, plot_height};
+use crate::ui::common::{
+    AmplitudeScale, CONTROLS_WIDTH, Y_AXIS_WIDTH, component_controls, format_hz, plot_height,
+};
 
 /// Nejmenší a největší nabízená délka FFT jako mocnina dvou (8 až 4096 vzorků).
 const MIN_FFT_EXPONENT: u32 = 3;
@@ -248,7 +250,8 @@ fn show_signal_controls(ui: &mut egui::Ui, settings: &mut Settings) {
     // zapamatujeme její index a odebereme ji až po cyklu.
     let mut index_to_remove = None;
     for (index, component) in signal.components.iter_mut().enumerate() {
-        let remove_clicked = show_component_controls(ui, index, component, nyquist_hz);
+        // Krok 0 znamená plynulý posuvník.
+        let remove_clicked = component_controls(ui, index, component, nyquist_hz, 0.0);
         if remove_clicked {
             index_to_remove = Some(index);
         }
@@ -273,65 +276,6 @@ fn show_signal_controls(ui: &mut egui::Ui, settings: &mut Settings) {
     ui.add(egui::Slider::new(&mut signal.noise_amplitude, 0.0..=MAX_AMPLITUDE).text("šum"));
     if ui.button("Nový šum").clicked() {
         signal.noise_seed += 1;
-    }
-}
-
-/// Ovládání jedné složky. Vrací `true`, pokud uživatel klikl na „Odebrat“.
-fn show_component_controls(
-    ui: &mut egui::Ui,
-    index: usize,
-    component: &mut Component,
-    nyquist_hz: f64,
-) -> bool {
-    let mut remove_clicked = false;
-    ui.push_id(index, |ui| {
-        ui.group(|ui| {
-            ui.horizontal(|ui| {
-                ui.checkbox(&mut component.enabled, format!("Složka {}", index + 1));
-                egui::ComboBox::from_id_salt("waveform")
-                    .selected_text(waveform_name(component.waveform))
-                    .show_ui(ui, |ui| {
-                        for waveform in ALL_WAVEFORMS {
-                            ui.selectable_value(
-                                &mut component.waveform,
-                                waveform,
-                                waveform_name(waveform),
-                            );
-                        }
-                    });
-                remove_clicked = ui.small_button("Odebrat").clicked();
-            });
-            ui.add(
-                egui::Slider::new(&mut component.frequency_hz, 0.0..=nyquist_hz)
-                    .suffix(" Hz")
-                    .text("frekvence"),
-            );
-            ui.add(
-                egui::Slider::new(&mut component.amplitude, 0.0..=MAX_AMPLITUDE).text("amplituda"),
-            );
-            ui.add(
-                egui::Slider::new(&mut component.phase_deg, -180.0..=180.0)
-                    .suffix("°")
-                    .text("fáze"),
-            );
-        });
-    });
-    remove_clicked
-}
-
-const ALL_WAVEFORMS: [Waveform; 4] = [
-    Waveform::Sine,
-    Waveform::Square,
-    Waveform::Sawtooth,
-    Waveform::Triangle,
-];
-
-fn waveform_name(waveform: Waveform) -> &'static str {
-    match waveform {
-        Waveform::Sine => "sinus",
-        Waveform::Square => "obdélník",
-        Waveform::Sawtooth => "pila",
-        Waveform::Triangle => "trojúhelník",
     }
 }
 
@@ -366,14 +310,6 @@ fn show_view_controls(ui: &mut egui::Ui, tab: &mut SpectrumTab) {
         ui.radio_value(&mut tab.frequency_axis, FrequencyAxis::Bin, "číslo binu");
     });
     ui.weak("Grafy: tažením posun, kolečkem s Ctrl zvětšení, dvojklik obnoví zobrazení.");
-}
-
-fn format_hz(frequency_hz: f64) -> String {
-    if frequency_hz < 10.0 {
-        format!("{frequency_hz:.3} Hz")
-    } else {
-        format!("{frequency_hz:.1} Hz")
-    }
 }
 
 // ---------------------------------------------------------------------------
