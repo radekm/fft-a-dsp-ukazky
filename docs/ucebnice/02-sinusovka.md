@@ -195,7 +195,7 @@ amplitudu 2.00 a fázi 90°. Kontrola: v čase 0 má být hodnota
 
 ## Kam dál
 
-- Další lekce: 3. Skládání signálů a myšlenka spektra (připravuje se).
+- Další lekce: [3. Skládání signálů a myšlenka spektra](03-skladani-a-spektrum.md).
 - Předchozí lekce: [1. Signál a vzorek](01-signal-a-vzorek.md).
 - V kódu: `src/dsp/signal.rs`, funkce `component_value` počítá přesně
   `A · sin(2π · f · t + φ)` (fázi převádí ze stupňů na radiány)

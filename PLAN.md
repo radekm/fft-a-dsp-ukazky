@@ -95,8 +95,8 @@ Pro snímky se mění výchozí hodnoty jen dočasně, tyto změny se necommituj
 - [x] `docs/ucebnice/README.md` s obsahem, odkazy z `README.md` a `docs/README.md`.
 - [x] 1. Signál a vzorek
 - [x] 2. Sinusovka
-- [ ] 3. Skládání signálů a myšlenka spektra
-- [ ] 4. DFT jako měření shody
+- [x] 3. Skládání signálů a myšlenka spektra
+- [x] 4. DFT jako měření shody
 - [ ] 5. DFT: komplexní čísla a biny
 - [ ] 6. FFT a proč je rychlá
 - [ ] 7. Decibely a fáze ve spektru

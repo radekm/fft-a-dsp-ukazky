@@ -25,8 +25,8 @@ učebnice jde pomaleji a po menších krocích.
 |----|-------|------------------|
 | 1  | [Signál a vzorek](01-signal-a-vzorek.md) | Vzorkování a aliasing |
 | 2  | [Sinusovka](02-sinusovka.md) | Vzorkování a aliasing |
-| 3  | Skládání signálů a myšlenka spektra | Signály a spektrum |
-| 4  | DFT jako měření shody | Signály a spektrum |
+| 3  | [Skládání signálů a myšlenka spektra](03-skladani-a-spektrum.md) | Signály a spektrum |
+| 4  | [DFT jako měření shody](04-dft-mereni-shody.md) | Signály a spektrum |
 | 5  | DFT: komplexní čísla a biny | Signály a spektrum |
 | 6  | FFT a proč je rychlá | Signály a spektrum |
 | 7  | Decibely a fáze ve spektru | Signály a spektrum |
@@ -48,7 +48,8 @@ Lekce bez odkazu se připravují.
 - dvojklik vrátí výchozí zobrazení,
 - najetí myší na graf ukáže souřadnice,
 - přesnou hodnotu posuvníku zadáš kliknutím na číslo vedle něj, napsáním
-  hodnoty a klávesou Enter.
+  hodnoty a klávesou Enter. Program používá desetinnou tečku (`0.50`),
+  text lekcí desetinnou čárku (0,5).
 
 Obrázky v lekcích jsou snímky programu; barvy a rozložení odpovídají
 tomu, co uvidíš na obrazovce.
