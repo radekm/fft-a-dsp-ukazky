@@ -5,6 +5,7 @@
 
 pub mod complex;
 pub mod fft;
+pub mod filter;
 pub mod sampling;
 pub mod signal;
 pub mod spectrum;

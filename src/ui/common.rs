@@ -1,6 +1,7 @@
 //! Věci společné pro více záložek.
 
 use crate::dsp::signal::{Component, Waveform};
+use crate::dsp::window::WindowKind;
 
 /// Největší amplituda, kterou lze nastavit u složky signálu.
 const MAX_COMPONENT_AMPLITUDE: f64 = 2.0;
@@ -96,5 +97,15 @@ pub fn format_hz(frequency_hz: f64) -> String {
         format!("{frequency_hz:.3} Hz")
     } else {
         format!("{frequency_hz:.1} Hz")
+    }
+}
+
+/// Český název okna.
+pub fn window_name(kind: WindowKind) -> &'static str {
+    match kind {
+        WindowKind::Rectangular => "obdélníkové (žádné)",
+        WindowKind::Hann => "Hann",
+        WindowKind::Hamming => "Hamming",
+        WindowKind::Blackman => "Blackman",
     }
 }

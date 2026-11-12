@@ -28,11 +28,3 @@ pub fn tab_title(tab: Tab) -> &'static str {
         Tab::Filters => "Filtry",
     }
 }
-
-/// Dočasný obsah záložky, dokud není její ukázka hotová.
-fn placeholder(ui: &mut egui::Ui, heading: &str, description: &str) {
-    ui.heading(heading);
-    ui.label(description);
-    ui.add_space(8.0);
-    ui.weak("Tato ukázka zatím není hotová.");
-}

@@ -4,9 +4,9 @@ Interaktivní desktopový program v Rustu (egui), na kterém si lze vyzkoušet
 FFT a digitální zpracování signálu (DSP). Je to učební pomůcka: přednost má
 srozumitelnost před výkonem.
 
-Stav: hotové jsou záložky **Signály a spektrum**, **Okna a prosakování**
-a **Vzorkování a aliasing**. Záložka Filtry je zatím prázdná a přibývají po fázích podle [PLAN.md](PLAN.md). Pravidla pro práci na
-projektu jsou v [AGENTS.md](AGENTS.md).
+Stav: hotové jsou všechny čtyři záložky. Zbývá česká dokumentace k jednotlivým
+tématům (fáze 5 v [PLAN.md](PLAN.md)). Pravidla pro práci na projektu jsou
+v [AGENTS.md](AGENTS.md).
 
 ## Záložky
 
@@ -61,6 +61,24 @@ Frekvence se zde zadávají v binech (1 bin = fs/N).
 - Snižuj fs a sleduj, kdy přestane rekonstrukce odpovídat originálu.
 - Přidej obdélník 3 Hz: jeho vyšší harmonické sahají nad fs/2 a po
   navzorkování se složí zpět do pásma 0 až fs/2.
+
+## Co zkusit v záložce Filtry
+
+Vzorkovací frekvence je zde pevně 1000 Hz. Výchozí signál je sinusovka 20 Hz,
+sinusovka 200 Hz a šum; výchozí filtr je FIR dolní propust 100 Hz.
+
+- Sleduj spektrum: výstup (modře) je vstup (šedě) posunutý o zesílení filtru
+  (žlutá čárkovaná čára). Sinusovka 200 Hz i šum nad mezí zmizí.
+- Měň k (délku FIR filtru): delší filtr má strmější přechod, ale větší
+  zpoždění – v časovém grafu je výstup posunutý doprava.
+- Přepni okno na obdélníkové: v nepropustném pásmu se objeví vysoké zvlnění.
+  Blackman potlačí nepropustné pásmo nejvíc.
+- Přepni na IIR: stejná mezní frekvence s pouhými pěti koeficienty, ale
+  pozvolnější přechod. Zvyš Q a sleduj převýšení u mezní frekvence a dlouho
+  doznívající impulzní odezvu.
+- Porovnej fázi: FIR má lineární fázi (pila se stálým sklonem v propustném
+  pásmu), IIR ne.
+- Pásmovou propustí vyber z několika složek jen jednu.
 
 ## Logování
 

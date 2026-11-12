@@ -72,13 +72,13 @@ docs/              česká vysvětlení k jednotlivým tématům
 - [x] Spektrum před a po podvzorkování.
 
 ### Fáze 4 – filtry
-- [ ] FIR: návrh metodou okna (windowed-sinc) – dolní, horní a pásmová propust;
+- [x] FIR: návrh metodou okna (windowed-sinc) – dolní, horní a pásmová propust;
       volba mezní frekvence, délky filtru a okna.
-- [ ] IIR: bikvadratický filtr (biquad) – dolní, horní a pásmová propust;
+- [x] IIR: bikvadratický filtr (biquad) – dolní, horní a pásmová propust;
       volba mezní frekvence a Q.
-- [ ] Zobrazení koeficientů / impulzní odezvy a frekvenční odezvy (amplituda, fáze).
-- [ ] Signál a jeho spektrum před a po filtraci.
-- [ ] Konvoluce jako samostatná, okomentovaná funkce.
+- [x] Zobrazení koeficientů / impulzní odezvy a frekvenční odezvy (amplituda, fáze).
+- [x] Signál a jeho spektrum před a po filtraci.
+- [x] Konvoluce jako samostatná, okomentovaná funkce.
 
 ### Fáze 5 – dokumentace
 - [ ] `docs/` – ke každé záložce krátké české vysvětlení, co zkoušet a čeho si všímat.

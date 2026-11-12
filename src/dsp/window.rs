@@ -70,17 +70,34 @@ fn cosine_terms(kind: WindowKind) -> CosineTerms {
     }
 }
 
-/// Koeficienty okna délky `length`.
+/// Koeficienty okna délky `length` pro spektrální analýzu.
 ///
 /// Jde o tzv. periodické okno (dělí se `N`, ne `N − 1`): je to jedna perioda
 /// kosinusovek, takže okno se při opakování záznamu plynule navazuje.
 /// Pro spektrální analýzu je to správná volba – nuly spektra okna pak padnou
 /// přesně na celé biny.
 pub fn window(kind: WindowKind, length: usize) -> Vec<f64> {
+    cosine_window(kind, length, length as f64)
+}
+
+/// Symetrické okno délky `length` pro návrh filtrů (dělí se `N − 1`).
+///
+/// První a poslední vzorek jsou si rovny, takže filtr navržený s tímto oknem
+/// má souměrné koeficienty a tedy lineární fázi.
+pub fn symmetric_window(kind: WindowKind, length: usize) -> Vec<f64> {
+    if length <= 1 {
+        return vec![1.0; length];
+    }
+    cosine_window(kind, length, (length - 1) as f64)
+}
+
+/// Společný výpočet obou druhů oken; `period` je počet vzorků, na který
+/// připadne jedna perioda kosinusovek.
+fn cosine_window(kind: WindowKind, length: usize, period: f64) -> Vec<f64> {
     let terms = cosine_terms(kind);
     (0..length)
         .map(|n| {
-            let angle = 2.0 * PI * n as f64 / length as f64;
+            let angle = 2.0 * PI * n as f64 / period;
             terms.a0 - terms.a1 * angle.cos() + terms.a2 * (2.0 * angle).cos()
         })
         .collect()
@@ -220,6 +237,15 @@ mod tests {
         assert!((hann[2] - 0.5).abs() < TOLERANCE);
         // Periodické okno je souměrné kolem prostředního vzorku: w[n] = w[N − n].
         assert!((hann[1] - hann[7]).abs() < TOLERANCE);
+    }
+
+    #[test]
+    fn symmetric_hann_shape() {
+        let hann = symmetric_window(WindowKind::Hann, 9);
+        assert!(hann[0].abs() < TOLERANCE);
+        assert!(hann[8].abs() < TOLERANCE);
+        assert!((hann[4] - 1.0).abs() < TOLERANCE);
+        assert_eq!(symmetric_window(WindowKind::Hann, 1), [1.0]);
     }
 
     #[test]

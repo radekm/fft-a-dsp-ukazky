@@ -2,6 +2,7 @@
 
 use tracing::info;
 
+use crate::ui::filters::FiltersTab;
 use crate::ui::sampling::SamplingTab;
 use crate::ui::spectrum::SpectrumTab;
 use crate::ui::windows::WindowsTab;
@@ -14,6 +15,7 @@ pub struct App {
     spectrum: SpectrumTab,
     windows: WindowsTab,
     sampling: SamplingTab,
+    filters: FiltersTab,
 }
 
 impl eframe::App for App {
@@ -37,7 +39,7 @@ impl eframe::App for App {
             Tab::Spectrum => ui::spectrum::show(ui, &mut self.spectrum),
             Tab::Windows => ui::windows::show(ui, &mut self.windows),
             Tab::Sampling => ui::sampling::show(ui, &mut self.sampling),
-            Tab::Filters => ui::filters::show(ui),
+            Tab::Filters => ui::filters::show(ui, &mut self.filters),
         });
     }
 }

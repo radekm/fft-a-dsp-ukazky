@@ -15,7 +15,7 @@ use crate::dsp::window::{
     ALL_WINDOWS, WindowKind, WindowProperties, WindowResponse, analyze_window, apply_window,
     window, window_response, zero_pad,
 };
-use crate::ui::common::{AmplitudeScale, CONTROLS_WIDTH, Y_AXIS_WIDTH, plot_height};
+use crate::ui::common::{AmplitudeScale, CONTROLS_WIDTH, Y_AXIS_WIDTH, plot_height, window_name};
 
 /// Nabízené délky signálu jako mocnina dvou (16 až 1024 vzorků).
 const MIN_LENGTH_EXPONENT: u32 = 4;
@@ -363,15 +363,6 @@ fn show_window_controls(ui: &mut egui::Ui, tab: &mut WindowsTab) {
             "Skutečná úroveň hlavní sinusovky je 0 dB. Rozdíl u frekvence mezi \
              biny je ztráta způsobená tím, že vrchol čáry padne mezi body spektra.",
         );
-    }
-}
-
-fn window_name(kind: WindowKind) -> &'static str {
-    match kind {
-        WindowKind::Rectangular => "obdélníkové (žádné)",
-        WindowKind::Hann => "Hann",
-        WindowKind::Hamming => "Hamming",
-        WindowKind::Blackman => "Blackman",
     }
 }
 
