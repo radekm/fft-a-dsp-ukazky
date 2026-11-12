@@ -193,7 +193,7 @@ kopec vyšší než samotné vzorky.
 
 ## Kam dál
 
-- Další lekce: 13. Konvoluce a FIR filtry (připravuje se).
+- Další lekce: [13. Konvoluce a FIR filtry](13-konvoluce-a-fir.md).
 - Předchozí lekce: [11. Vzorkování a aliasing](11-vzorkovani-a-aliasing.md).
 - Podrobnější text k záložce: [Vzorkování a aliasing](../03-vzorkovani-a-aliasing.md).
 - V kódu: `src/dsp/sampling.rs`, funkce `sinc` a `reconstruct` (součet

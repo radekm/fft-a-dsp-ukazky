@@ -35,11 +35,10 @@ učebnice jde pomaleji a po menších krocích.
 | 10 | [Doplnění nulami a rozlišení](10-doplneni-nulami-a-rozliseni.md) | Okna a prosakování |
 | 11 | [Vzorkování a aliasing](11-vzorkovani-a-aliasing.md) | Vzorkování a aliasing |
 | 12 | [Rekonstrukce ze vzorků](12-rekonstrukce.md) | Vzorkování a aliasing |
-| 13 | Konvoluce a FIR filtry | Filtry |
-| 14 | IIR filtr (biquad) | Filtry |
-| 15 | Shrnutí | – |
+| 13 | [Konvoluce a FIR filtry](13-konvoluce-a-fir.md) | Filtry |
+| 14 | [IIR filtr – biquad](14-iir-biquad.md) | Filtry |
+| 15 | [Shrnutí](15-shrnuti.md) | všechny |
 
-Lekce bez odkazu se připravují.
 
 ## Jak ovládat grafy
 

@@ -105,9 +105,9 @@ Pro snímky se mění výchozí hodnoty jen dočasně, tyto změny se necommituj
 - [x] 10. Doplnění nulami a rozlišení
 - [x] 11. Vzorkování a aliasing
 - [x] 12. Rekonstrukce ze vzorků
-- [ ] 13. Konvoluce a FIR filtry
-- [ ] 14. IIR filtr (biquad)
-- [ ] 15. Shrnutí
+- [x] 13. Konvoluce a FIR filtry
+- [x] 14. IIR filtr (biquad)
+- [x] 15. Shrnutí
 
 ## Možná později (mimo první verzi)
 
