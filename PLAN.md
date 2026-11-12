@@ -40,10 +40,10 @@ docs/              česká vysvětlení k jednotlivým tématům
 ## Fáze
 
 ### Fáze 0 – kostra
-- [ ] `Cargo.toml` s povolenými crates, prázdné okno se záložkami.
-- [ ] Hlášení chyb přes color-eyre, logování přes tracing.
-- [ ] `README.md` (česky): co program je, jak ho přeložit a spustit.
-- [ ] Nastavení `cargo fmt`, `clippy`, `test`.
+- [x] `Cargo.toml` s povolenými crates, prázdné okno se záložkami.
+- [x] Hlášení chyb přes color-eyre, logování přes tracing.
+- [x] `README.md` (česky): co program je, jak ho přeložit a spustit.
+- [x] Nastavení `cargo fmt`, `clippy`, `test`.
 
 ### Fáze 1 – signály a spektrum
 - [ ] Vlastní typ komplexního čísla.

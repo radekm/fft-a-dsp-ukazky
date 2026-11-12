@@ -1,0 +1,19 @@
+[package]
+name = "fft-dsp-demos"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+description = "Interactive demos for understanding FFT and DSP"
+publish = false
+
+# Povolené crates a features určuje AGENTS.md. Nic jiného sem nepřidávat.
+[dependencies]
+color-eyre = "=0.6.5"
+tracing = "=0.1.44"
+tracing-subscriber = { version = "=0.3.23", features = ["json"] }
+tracing-error = "=0.2.1"
+egui = { version = "=0.37.0", default-features = false, features = ["default_fonts"] }
+eframe = { version = "=0.37.0", default-features = false, features = ["glow", "x11"] }
+
+[lints.rust]
+unsafe_code = "forbid"
