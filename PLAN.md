@@ -101,8 +101,8 @@ Pro snímky se mění výchozí hodnoty jen dočasně, tyto změny se necommituj
 - [x] 6. FFT a proč je rychlá
 - [x] 7. Decibely a fáze ve spektru
 - [x] 8. Prosakování
-- [ ] 9. Okna
-- [ ] 10. Doplnění nulami a rozlišení
+- [x] 9. Okna
+- [x] 10. Doplnění nulami a rozlišení
 - [ ] 11. Vzorkování a aliasing
 - [ ] 12. Rekonstrukce ze vzorků
 - [ ] 13. Konvoluce a FIR filtry
