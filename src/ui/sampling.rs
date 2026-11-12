@@ -1,5 +1,7 @@
 //! Záložka „Vzorkování a aliasing“: spojitý signál, jeho vzorky, obnova ze
 //! vzorků a spektrum před a po vzorkování.
+//!
+//! Vysvětlení a návod, co zkoušet: `docs/03-vzorkovani-a-aliasing.md`.
 
 use egui::Color32;
 use egui_plot::{Legend, Line, LineStyle, Plot, PlotPoints, Points, VLine};

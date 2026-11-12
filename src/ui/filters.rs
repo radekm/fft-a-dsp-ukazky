@@ -1,5 +1,7 @@
 //! Záložka „Filtry“: návrh FIR a IIR filtru, jeho impulzní odezva
 //! a frekvenční charakteristika a signál i spektrum před a po filtraci.
+//!
+//! Vysvětlení a návod, co zkoušet: `docs/04-filtry.md`.
 
 use egui::Color32;
 use egui_plot::{AxisHints, Legend, Line, LineStyle, Plot, PlotPoints, Points, VLine};

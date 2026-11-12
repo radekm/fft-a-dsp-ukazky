@@ -3,6 +3,8 @@
 //!
 //! Všechny frekvence jsou zde v binech (1 bin = fs/N). Celé číslo znamená,
 //! že signál má v záznamu celý počet period a k prosakování nedojde.
+//!
+//! Vysvětlení a návod, co zkoušet: `docs/02-okna-a-prosakovani.md`.
 
 use egui::Color32;
 use egui_plot::{Legend, Line, LineStyle, Plot, PlotPoints, Points, VLine};

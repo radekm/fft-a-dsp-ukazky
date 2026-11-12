@@ -1,5 +1,7 @@
 //! Záložka „Signály a spektrum“: vlevo ovládání signálu, vpravo grafy
 //! časového průběhu, amplitudového spektra a fáze.
+//!
+//! Vysvětlení a návod, co zkoušet: `docs/01-signaly-a-spektrum.md`.
 
 use std::time::{Duration, Instant};
 

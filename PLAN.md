@@ -81,8 +81,8 @@ docs/              česká vysvětlení k jednotlivým tématům
 - [x] Konvoluce jako samostatná, okomentovaná funkce.
 
 ### Fáze 5 – dokumentace
-- [ ] `docs/` – ke každé záložce krátké české vysvětlení, co zkoušet a čeho si všímat.
-- [ ] Projít komentáře v kódu, doplnit odkazy na vzorce.
+- [x] `docs/` – ke každé záložce krátké české vysvětlení, co zkoušet a čeho si všímat.
+- [x] Projít komentáře v kódu, doplnit odkazy na vzorce.
 
 ## Možná později (mimo první verzi)
 
