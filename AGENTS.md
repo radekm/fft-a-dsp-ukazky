@@ -20,7 +20,7 @@ Před začátkem práce si přečti tento soubor a `PLAN.md`.
 ## Technologie
 
 - Jazyk: Rust (edice 2024, stabilní toolchain, minimálně 1.95).
-- GUI: egui přes eframe (backend glow), grafy přes egui_plot.
+- GUI: egui přes eframe (backend glow, na Linuxu X11), grafy přes egui_plot.
 - Chyby: color-eyre. Logování: tracing.
 - Cílová platforma: nativní desktopová aplikace.
 
@@ -38,7 +38,7 @@ tracing-subscriber = { version = "=0.3.23", features = ["json"] }
 tracing-appender = "=0.2.5"
 tracing-error = "=0.2.1"
 egui = { version = "=0.37.0", default-features = false, features = ["default_fonts"] }
-eframe = { version = "=0.37.0", default-features = false, features = ["glow"] }
+eframe = { version = "=0.37.0", default-features = false, features = ["glow", "x11"] }
 egui_plot = { version = "=0.38.0", default-features = false }
 ```
 

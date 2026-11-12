@@ -90,5 +90,4 @@ docs/              česká vysvětlení k jednotlivým tématům
 
 ## Otevřené otázky
 
-- Na Linuxu se `eframe` jen s feature `glow` nepřeloží (winit potřebuje
-  `x11` nebo `wayland`). Čeká na rozhodnutí autora.
+- Zatím žádné.
