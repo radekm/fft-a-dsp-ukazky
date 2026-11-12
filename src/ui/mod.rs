@@ -1,5 +1,6 @@
 //! Uživatelské rozhraní: jedna záložka = jeden soubor.
 
+pub mod common;
 pub mod filters;
 pub mod sampling;
 pub mod spectrum;

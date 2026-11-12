@@ -11,6 +11,7 @@ use crate::dsp::complex::Complex;
 use crate::dsp::fft::{dft, fft, ifft, real_to_complex};
 use crate::dsp::signal::{Component, SignalSpec, Waveform, generate};
 use crate::dsp::spectrum::{SpectrumLine, one_sided_spectrum};
+use crate::ui::common::{AmplitudeScale, CONTROLS_WIDTH, Y_AXIS_WIDTH, plot_height};
 
 /// Nejmenší a největší nabízená délka FFT jako mocnina dvou (8 až 4096 vzorků).
 const MIN_FFT_EXPONENT: u32 = 3;
@@ -29,23 +30,11 @@ const DB_FLOOR: f64 = -120.0;
 /// aby bylo vidět, že spektrum je diskrétní. Při větším počtu by splývaly.
 const MAX_STEM_BINS: usize = 129;
 
-const CONTROLS_WIDTH: f32 = 300.0;
-
-/// Stejná šířka svislé osy u všech grafů, aby byly grafy pod sebou zarovnané.
-const Y_AXIS_WIDTH: f32 = 48.0;
-
 /// Kterým algoritmem se spektrum počítá.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Algorithm {
     Fft,
     Dft,
-}
-
-/// Svislá osa amplitudového spektra.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum AmplitudeScale {
-    Linear,
-    Decibel,
 }
 
 /// Vodorovná osa spektra.
@@ -173,7 +162,8 @@ fn compute(settings: &Settings) -> Computed {
         settings: settings.clone(),
         round_trip_error,
         samples,
-        lines: one_sided_spectrum(&output, settings.sample_rate_hz),
+        // Bez okna je součet vah roven počtu vzorků.
+        lines: one_sided_spectrum(&output, settings.sample_rate_hz, fft_size as f64),
         transform_time,
     }
 }
@@ -397,17 +387,16 @@ fn show_plots(
     frequency_axis: FrequencyAxis,
 ) {
     // Tři grafy pod sebou si rozdělí dostupnou výšku rovným dílem.
-    let label_height = ui.text_style_height(&egui::TextStyle::Body) + ui.spacing().item_spacing.y;
-    let plot_height = (ui.available_height() / 3.0 - label_height - 4.0).max(80.0);
+    let height = plot_height(ui, 3);
 
     ui.label("Časový průběh");
-    show_time_plot(ui, computed, plot_height);
+    show_time_plot(ui, computed, height);
 
     ui.label("Amplitudové spektrum");
-    show_amplitude_plot(ui, computed, amplitude_scale, frequency_axis, plot_height);
+    show_amplitude_plot(ui, computed, amplitude_scale, frequency_axis, height);
 
     ui.label("Fázové spektrum (vztaženo ke kosinu, sinus má −90°)");
-    show_phase_plot(ui, computed, frequency_axis, plot_height);
+    show_phase_plot(ui, computed, frequency_axis, height);
 }
 
 fn show_time_plot(ui: &mut egui::Ui, computed: &Computed, height: f32) {

@@ -32,6 +32,7 @@ src/
     filter.rs      FIR a IIR filtry, frekvenční odezva
     sampling.rs    převzorkování, rekonstrukce
   ui/              jedna záložka = jeden soubor
+    common.rs      věci společné pro více záložek
     spectrum.rs
     windows.rs
     sampling.rs
@@ -58,10 +59,10 @@ docs/              česká vysvětlení k jednotlivým tématům
 - [x] Testy: FFT = DFT, zpětná FFT vrátí signál, špička sinusovky ve správném binu.
 
 ### Fáze 2 – okna a prosakování
-- [ ] Okna: obdélníkové, Hann, Hamming, Blackman.
-- [ ] Zobrazení tvaru okna a jeho spektra (hlavní lalok, postranní laloky).
-- [ ] Ukázka prosakování: frekvence přesně v binu a mezi biny, s oknem a bez.
-- [ ] Doplnění nulami (zero-padding) a jeho vliv na vzhled spektra.
+- [x] Okna: obdélníkové, Hann, Hamming, Blackman.
+- [x] Zobrazení tvaru okna a jeho spektra (hlavní lalok, postranní laloky).
+- [x] Ukázka prosakování: frekvence přesně v binu a mezi biny, s oknem a bez.
+- [x] Doplnění nulami (zero-padding) a jeho vliv na vzhled spektra.
 
 ### Fáze 3 – vzorkování a aliasing
 - [ ] „Spojitý“ signál (hustě vzorkovaný) a přes něj vzorky při zvolené

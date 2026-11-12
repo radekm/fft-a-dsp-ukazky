@@ -7,3 +7,4 @@ pub mod complex;
 pub mod fft;
 pub mod signal;
 pub mod spectrum;
+pub mod window;

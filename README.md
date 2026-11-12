@@ -4,8 +4,8 @@ Interaktivní desktopový program v Rustu (egui), na kterém si lze vyzkoušet
 FFT a digitální zpracování signálu (DSP). Je to učební pomůcka: přednost má
 srozumitelnost před výkonem.
 
-Stav: hotová je záložka **Signály a spektrum**. Ostatní záložky jsou zatím
-prázdné a přibývají po fázích podle [PLAN.md](PLAN.md). Pravidla pro práci na
+Stav: hotové jsou záložky **Signály a spektrum** a **Okna a prosakování**.
+Ostatní záložky jsou zatím prázdné a přibývají po fázích podle [PLAN.md](PLAN.md). Pravidla pro práci na
 projektu jsou v [AGENTS.md](AGENTS.md).
 
 ## Záložky
@@ -35,6 +35,21 @@ ovladač s OpenGL.
 - Změň sinus na obdélník nebo pilu a sleduj vyšší harmonické.
 - Přidej šum a přepni amplitudu na decibely.
 - Přepni výpočet z FFT na DFT a porovnej dobu transformace při N = 4096.
+
+## Co zkusit v záložce Okna a prosakování
+
+Frekvence se zde zadávají v binech (1 bin = fs/N).
+
+- Bez okna (obdélníkové) a s hlavní sinusovkou přesně v binu je ve spektru
+  jediná ostrá čára a slabá sinusovka −60 dB je dobře vidět.
+- Klikni na „Mezi biny“: bez okna se hlavní čára rozlije po celém spektru
+  a slabou sinusovku zakryje. S oknem Hann nebo Blackman je zase vidět.
+- Sleduj „Nejvyšší čáru spektra“: mezi biny ukáže bez okna asi −3,9 dB,
+  s oknem Hann jen asi −1,4 dB.
+- Porovnej okna v dolním grafu: užší hlavní lalok znamená lepší rozlišení
+  blízkých frekvencí, nižší postranní laloky menší prosakování.
+- Zapni doplnění nulami ×8: body spektra zhoustnou a je vidět skutečný tvar
+  čáry, ale čára se nezúží.
 
 ## Logování
 

@@ -3,6 +3,7 @@
 use tracing::info;
 
 use crate::ui::spectrum::SpectrumTab;
+use crate::ui::windows::WindowsTab;
 use crate::ui::{self, Tab};
 
 /// Stav aplikace: vybraná záložka a stav jednotlivých ukázek.
@@ -10,6 +11,7 @@ use crate::ui::{self, Tab};
 pub struct App {
     selected_tab: Tab,
     spectrum: SpectrumTab,
+    windows: WindowsTab,
 }
 
 impl eframe::App for App {
@@ -31,7 +33,7 @@ impl eframe::App for App {
         // Zbytek okna patří vybrané záložce.
         egui::CentralPanel::default().show(ui, |ui| match self.selected_tab {
             Tab::Spectrum => ui::spectrum::show(ui, &mut self.spectrum),
-            Tab::Windows => ui::windows::show(ui),
+            Tab::Windows => ui::windows::show(ui, &mut self.windows),
             Tab::Sampling => ui::sampling::show(ui),
             Tab::Filters => ui::filters::show(ui),
         });

@@ -37,14 +37,23 @@ pub fn bin_frequency(bin: usize, sample_rate_hz: f64, fft_size: usize) -> f64 {
 /// je ale rozdělená mezi obě poloviny, proto amplitudu násobíme dvěma.
 /// Výjimkou jsou bin 0 (stejnosměrná složka) a bin N/2 (Nyquistova
 /// frekvence), které protějšek nemají.
-pub fn one_sided_spectrum(fft_output: &[Complex], sample_rate_hz: f64) -> Vec<SpectrumLine> {
+///
+/// `window_sum` je součet koeficientů okna, kterým byl signál vynásoben
+/// (bez okna je to počet vzorků signálu). Sinusovka s amplitudou A dá v FFT
+/// hodnotu A · window_sum / 2, proto tímto součtem dělíme. Vzorky doplněné
+/// nulami se do součtu nepočítají.
+pub fn one_sided_spectrum(
+    fft_output: &[Complex],
+    sample_rate_hz: f64,
+    window_sum: f64,
+) -> Vec<SpectrumLine> {
     let n = fft_output.len();
     let last_bin = n / 2;
     let mut lines = Vec::with_capacity(last_bin + 1);
     for (bin, value) in fft_output.iter().enumerate().take(last_bin + 1) {
         let has_mirror_bin = bin != 0 && bin != last_bin;
         let fold_factor = if has_mirror_bin { 2.0 } else { 1.0 };
-        let amplitude = fold_factor * value.magnitude() / n as f64;
+        let amplitude = fold_factor * value.magnitude() / window_sum;
         let phase_deg = if amplitude > PHASE_THRESHOLD {
             value.phase().to_degrees()
         } else {
@@ -85,7 +94,7 @@ mod tests {
             noise_seed: 1,
         };
         let samples = generate(&spec, 1024.0, 1024);
-        let lines = one_sided_spectrum(&fft(&real_to_complex(&samples)), 1024.0);
+        let lines = one_sided_spectrum(&fft(&real_to_complex(&samples)), 1024.0, 1024.0);
 
         assert_eq!(lines.len(), 513);
         for line in &lines {
