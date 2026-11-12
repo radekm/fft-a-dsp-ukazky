@@ -38,6 +38,7 @@ src/
     sampling.rs
     filters.rs
 docs/              česká vysvětlení k jednotlivým tématům
+  ucebnice/        pidi učebnice: krátké lekce pro začátečníky
 ```
 
 ## Fáze
@@ -83,6 +84,30 @@ docs/              česká vysvětlení k jednotlivým tématům
 ### Fáze 5 – dokumentace
 - [x] `docs/` – ke každé záložce krátké české vysvětlení, co zkoušet a čeho si všímat.
 - [x] Projít komentáře v kódu, doplnit odkazy na vzorce.
+
+### Fáze 6 – pidi učebnice
+Série krátkých lekcí v `docs/ucebnice/` pro úplné začátečníky. Každá lekce
+má cíl, základy, postup v programu, pokusy, častá nedorozumění, shrnutí,
+otázky a cvičení s řešením a odkaz na kód. Obrázky jsou snímky programu
+v `docs/ucebnice/img/`; čísla v textu jsou ověřená výpočtem nebo programem.
+Pro snímky se mění výchozí hodnoty jen dočasně, tyto změny se necommitují.
+
+- [x] `docs/ucebnice/README.md` s obsahem, odkazy z `README.md` a `docs/README.md`.
+- [x] 1. Signál a vzorek
+- [x] 2. Sinusovka
+- [ ] 3. Skládání signálů a myšlenka spektra
+- [ ] 4. DFT jako měření shody
+- [ ] 5. DFT: komplexní čísla a biny
+- [ ] 6. FFT a proč je rychlá
+- [ ] 7. Decibely a fáze ve spektru
+- [ ] 8. Prosakování
+- [ ] 9. Okna
+- [ ] 10. Doplnění nulami a rozlišení
+- [ ] 11. Vzorkování a aliasing
+- [ ] 12. Rekonstrukce ze vzorků
+- [ ] 13. Konvoluce a FIR filtry
+- [ ] 14. IIR filtr (biquad)
+- [ ] 15. Shrnutí
 
 ## Možná později (mimo první verzi)
 

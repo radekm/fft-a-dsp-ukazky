@@ -13,6 +13,9 @@ Doporučené pořadí (každé téma staví na předchozím):
    ze spojitého signálu uděláme vzorky.
 4. [Filtry](04-filtry.md) – jak ze signálu vybrat jen některé frekvence.
 
+Úplným začátečníkům doporučujeme začít [pidi učebnicí](ucebnice/README.md):
+jde pomaleji, po menších krocích a ke každé lekci má cvičení s řešením.
+
 ## Společné ovládání grafů
 
 - tažením myši se graf posouvá,

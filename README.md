@@ -30,6 +30,10 @@ ovladač s OpenGL.
 Ke každé záložce je česky vysvětlena teorie, co zkoušet a čeho si všímat,
 včetně otázek k zamyšlení: viz [docs/README.md](docs/README.md).
 
+Pro úplné začátečníky je tu [pidi učebnice FFT a DSP](docs/ucebnice/README.md):
+série krátkých lekcí od pojmu vzorek až po filtry, s pokusy v programu
+a cvičeními s řešením.
+
 ## Logování
 
 Program loguje strukturovaně: každá událost má zprávu a pojmenovaná pole.
