@@ -12,6 +12,50 @@ pub const CONTROLS_WIDTH: f32 = 300.0;
 /// Stejná šířka svislé osy u všech grafů, aby byly grafy pod sebou zarovnané.
 pub const Y_AXIS_WIDTH: f32 = 48.0;
 
+/// Popisek u kurzoru myši v grafu: název nejbližší křivky a souřadnice.
+///
+/// egui_plot bez vlastního popisku ukáže jen zaměřovací kříž. Tento popisek
+/// vypíše čísla s osami pojmenovanými stejně jako v grafu. Když je kurzor
+/// blízko bodu některé křivky, ukáže přesné souřadnice toho bodu, jinak
+/// souřadnice samotného kurzoru.
+pub fn hover_label(
+    x_name: &'static str,
+    y_name: &'static str,
+) -> impl Fn(&egui_plot::HoverPosition<'_>) -> Option<String> {
+    move |position| {
+        let text = match position {
+            egui_plot::HoverPosition::NearDataPoint {
+                plot_name,
+                position,
+                ..
+            } => format!(
+                "{plot_name}\n{x_name}: {}\n{y_name}: {}",
+                format_coordinate(position.x),
+                format_coordinate(position.y)
+            ),
+            egui_plot::HoverPosition::Elsewhere { position } => format!(
+                "{x_name}: {}\n{y_name}: {}",
+                format_coordinate(position.x),
+                format_coordinate(position.y)
+            ),
+        };
+        Some(text)
+    }
+}
+
+/// Číslo na nejvýš 4 desetinná místa bez zbytečných nul na konci
+/// (25.0000 → „25“, 0.70711 → „0.7071“).
+fn format_coordinate(value: f64) -> String {
+    let text = format!("{value:.4}");
+    let text = text.trim_end_matches('0').trim_end_matches('.');
+    // Malé záporné číslo by se zaokrouhlilo na „-0“.
+    if text == "-0" {
+        "0".to_owned()
+    } else {
+        text.to_owned()
+    }
+}
+
 /// Svislá osa amplitudového spektra.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AmplitudeScale {

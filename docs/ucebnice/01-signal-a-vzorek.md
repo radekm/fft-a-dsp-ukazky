@@ -90,8 +90,13 @@ V horním grafu je na vodorovné ose čas od 0 do 1 s:
   kterého se vzorkuje. Ve skutečném zařízení bychom ho neznali – máme jen
   vzorky.
 
-Když najedeš myší do grafu, ukážou se souřadnice. Prvních osm vzorků má
-hodnoty 0; 0,707; 1; 0,707; 0; −0,707; −1; −0,707 a pak se to opakuje.
+Když najedeš myší do grafu, ukáže se popisek se souřadnicemi kurzoru. Když
+najedeš přímo na puntík, popisek se k němu „přichytí“ a ukáže název křivky
+(„vzorky“), čas a hodnotu toho vzorku:
+
+![Popisek u vzorku v čase 0,05 s (zde při fs = 20 Hz)](img/01-popisek-mysi.png)
+
+Prvních osm vzorků má hodnoty 0; 0,707; 1; 0,707; 0; −0,707; −1; −0,707 a pak se to opakuje.
 Na jednu vlnu (od 0 do 0,2 s) tedy připadá právě 8 vzorků, protože
 `40 / 5 = 8`.
 

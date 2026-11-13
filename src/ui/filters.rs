@@ -16,7 +16,7 @@ use crate::dsp::signal::{Component, SignalSpec, Waveform, generate};
 use crate::dsp::spectrum::{SpectrumLine, one_sided_spectrum};
 use crate::dsp::window::{ALL_WINDOWS, WindowKind, apply_window, window};
 use crate::ui::common::{
-    CONTROLS_WIDTH, Y_AXIS_WIDTH, component_controls, plot_height, window_name,
+    CONTROLS_WIDTH, Y_AXIS_WIDTH, component_controls, hover_label, plot_height, window_name,
 };
 
 /// Vzorkovací frekvence je v této záložce pevná; frekvence jdou do 500 Hz.
@@ -467,6 +467,7 @@ fn show_impulse_plot(ui: &mut egui::Ui, computed: &Computed, height: f32) {
         .collect();
     Plot::new("filter_impulse_plot")
         .height(height)
+        .label_formatter(hover_label("vzorek n", "h[n]"))
         .y_axis_min_width(Y_AXIS_WIDTH)
         .custom_x_axes(narrow_x_axis("vzorek n"))
         .show(ui, |plot_ui| {
@@ -503,6 +504,7 @@ fn show_response_plot(
 
     Plot::new("filter_response_plot")
         .height(height)
+        .label_formatter(hover_label("frekvence [Hz]", y_label))
         .y_axis_min_width(Y_AXIS_WIDTH)
         .custom_x_axes(narrow_x_axis("frekvence [Hz]"))
         .y_axis_label(y_label)
@@ -533,6 +535,7 @@ fn marker_frequencies(settings: &Settings) -> Vec<f64> {
 fn show_time_plot(ui: &mut egui::Ui, computed: &Computed, height: f32) {
     Plot::new("filter_time_plot")
         .height(height)
+        .label_formatter(hover_label("čas [ms]", "hodnota"))
         .y_axis_min_width(Y_AXIS_WIDTH)
         .custom_x_axes(narrow_x_axis("čas [ms]"))
         .legend(Legend::default())
@@ -557,6 +560,7 @@ fn time_points(samples: &[f64]) -> PlotPoints<'static> {
 fn show_spectrum_plot(ui: &mut egui::Ui, computed: &Computed, height: f32) {
     Plot::new("filter_spectrum_plot")
         .height(height)
+        .label_formatter(hover_label("frekvence [Hz]", "amplituda [dB]"))
         .y_axis_min_width(Y_AXIS_WIDTH)
         .custom_x_axes(narrow_x_axis("frekvence [Hz]"))
         .y_axis_label("amplituda [dB]")

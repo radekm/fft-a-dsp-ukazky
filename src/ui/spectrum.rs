@@ -14,7 +14,8 @@ use crate::dsp::fft::{dft, fft, ifft, real_to_complex};
 use crate::dsp::signal::{Component, SignalSpec, Waveform, generate};
 use crate::dsp::spectrum::{SpectrumLine, one_sided_spectrum};
 use crate::ui::common::{
-    AmplitudeScale, CONTROLS_WIDTH, Y_AXIS_WIDTH, component_controls, format_hz, plot_height,
+    AmplitudeScale, CONTROLS_WIDTH, Y_AXIS_WIDTH, component_controls, format_hz, hover_label,
+    plot_height,
 };
 
 /// Nejmenší a největší nabízená délka FFT jako mocnina dvou (8 až 4096 vzorků).
@@ -348,6 +349,7 @@ fn show_time_plot(ui: &mut egui::Ui, computed: &Computed, height: f32) {
 
     Plot::new("time_plot")
         .height(height)
+        .label_formatter(hover_label("čas [ms]", "hodnota"))
         .y_axis_min_width(Y_AXIS_WIDTH)
         .x_axis_label("čas [ms]")
         .y_axis_label("hodnota")
@@ -385,6 +387,7 @@ fn show_amplitude_plot(
 
     Plot::new("amplitude_plot")
         .height(height)
+        .label_formatter(hover_label(frequency_axis_label(frequency_axis), y_label))
         .y_axis_min_width(Y_AXIS_WIDTH)
         .x_axis_label(frequency_axis_label(frequency_axis))
         .y_axis_label(y_label)
@@ -416,6 +419,10 @@ fn show_phase_plot(
 
     Plot::new("phase_plot")
         .height(height)
+        .label_formatter(hover_label(
+            frequency_axis_label(frequency_axis),
+            "fáze [°]",
+        ))
         .y_axis_min_width(Y_AXIS_WIDTH)
         .x_axis_label(frequency_axis_label(frequency_axis))
         .y_axis_label("fáze [°]")

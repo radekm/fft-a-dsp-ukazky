@@ -17,7 +17,9 @@ use crate::dsp::window::{
     ALL_WINDOWS, WindowKind, WindowProperties, WindowResponse, analyze_window, apply_window,
     window, window_response, zero_pad,
 };
-use crate::ui::common::{AmplitudeScale, CONTROLS_WIDTH, Y_AXIS_WIDTH, plot_height, window_name};
+use crate::ui::common::{
+    AmplitudeScale, CONTROLS_WIDTH, Y_AXIS_WIDTH, hover_label, plot_height, window_name,
+};
 
 /// Nabízené délky signálu jako mocnina dvou (16 až 1024 vzorků).
 const MIN_LENGTH_EXPONENT: u32 = 4;
@@ -410,6 +412,7 @@ fn show_plots(
 fn show_time_plot(ui: &mut egui::Ui, computed: &Computed, height: f32) {
     Plot::new("window_time_plot")
         .height(height)
+        .label_formatter(hover_label("vzorek n", "hodnota"))
         .y_axis_min_width(Y_AXIS_WIDTH)
         .x_axis_label("vzorek n")
         .legend(Legend::default())
@@ -450,6 +453,7 @@ fn show_spectrum_plot(
 
     Plot::new("window_spectrum_plot")
         .height(height)
+        .label_formatter(hover_label("frekvence [biny]", y_label))
         .y_axis_min_width(Y_AXIS_WIDTH)
         .x_axis_label("frekvence [biny]")
         .y_axis_label(y_label)
@@ -507,6 +511,7 @@ fn show_window_response_plot(
 ) {
     Plot::new("window_response_plot")
         .height(height)
+        .label_formatter(hover_label("vzdálenost [biny]", "útlum [dB]"))
         .y_axis_min_width(Y_AXIS_WIDTH)
         .x_axis_label("vzdálenost od frekvence sinusovky [biny]")
         .y_axis_label("útlum [dB]")

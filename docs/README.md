@@ -21,7 +21,8 @@ jde pomaleji, po menších krocích a ke každé lekci má cvičení s řešení
 - tažením myši se graf posouvá,
 - kolečkem myši s klávesou Ctrl se zvětšuje a zmenšuje,
 - dvojklik vrátí výchozí zobrazení,
-- najetí myší na graf ukáže souřadnice.
+- najetí myší do grafu ukáže popisek se souřadnicemi; blízko bodu křivky
+  se popisek k bodu přichytí a ukáže název křivky a přesné hodnoty bodu.
 
 ## Kde je co v kódu
 

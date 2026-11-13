@@ -45,7 +45,8 @@ učebnice jde pomaleji a po menších krocích.
 - tažením myši se graf posouvá,
 - kolečkem myši s klávesou Ctrl se zvětšuje a zmenšuje,
 - dvojklik vrátí výchozí zobrazení,
-- najetí myší na graf ukáže souřadnice,
+- najetí myší do grafu ukáže popisek se souřadnicemi; blízko bodu křivky
+  se popisek k bodu přichytí a ukáže název křivky a přesné hodnoty bodu,
 - přesnou hodnotu posuvníku zadáš kliknutím na číslo vedle něj, napsáním
   hodnoty a klávesou Enter. Program používá desetinnou tečku (`0.50`),
   text lekcí desetinnou čárku (0,5).

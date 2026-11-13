@@ -12,7 +12,8 @@ use crate::dsp::sampling::{alias_frequency, reconstruct, sample, sample_time};
 use crate::dsp::signal::{Component, SignalSpec, Waveform, generate, value_at};
 use crate::dsp::spectrum::{SpectrumLine, one_sided_spectrum};
 use crate::ui::common::{
-    CONTROLS_WIDTH, Y_AXIS_WIDTH, component_controls, format_hz, plot_height, waveform_name,
+    CONTROLS_WIDTH, Y_AXIS_WIDTH, component_controls, format_hz, hover_label, plot_height,
+    waveform_name,
 };
 
 const MIN_SAMPLE_RATE_HZ: f64 = 1.0;
@@ -321,6 +322,7 @@ fn show_plots(ui: &mut egui::Ui, computed: &Computed, show_reconstruction: bool)
 fn show_time_plot(ui: &mut egui::Ui, computed: &Computed, show_reconstruction: bool, height: f32) {
     Plot::new("sampling_time_plot")
         .height(height)
+        .label_formatter(hover_label("čas [s]", "hodnota"))
         .y_axis_min_width(Y_AXIS_WIDTH)
         .x_axis_label("čas [s]")
         .legend(Legend::default())
@@ -356,6 +358,7 @@ fn show_spectrum_plot(ui: &mut egui::Ui, computed: &Computed, height: f32) {
 
     Plot::new("sampling_spectrum_plot")
         .height(height)
+        .label_formatter(hover_label("frekvence [Hz]", "amplituda"))
         .y_axis_min_width(Y_AXIS_WIDTH)
         .x_axis_label("frekvence [Hz]")
         .y_axis_label("amplituda")

@@ -92,6 +92,8 @@ otázky a cvičení s řešením a odkaz na kód. Obrázky jsou snímky programu
 v `docs/ucebnice/img/`; čísla v textu jsou ověřená výpočtem nebo programem.
 Pro snímky se mění výchozí hodnoty jen dočasně, tyto změny se necommitují.
 
+- [x] Popisek se souřadnicemi při najetí myší do grafu (`hover_label`
+      v `src/ui/common.rs`); učebnice na něj spoléhá.
 - [x] `docs/ucebnice/README.md` s obsahem, odkazy z `README.md` a `docs/README.md`.
 - [x] 1. Signál a vzorek
 - [x] 2. Sinusovka
