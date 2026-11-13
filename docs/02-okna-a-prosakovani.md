@@ -41,7 +41,8 @@ spektra okna. Ten má:
   slabé signály jinde ve spektru.
 
 Užší hlavní lalok a nižší postranní laloky jdou proti sobě; každé okno je
-jiný kompromis. Hodnoty změřené programem:
+jiný kompromis. Hodnoty pro dlouhé okno (N ≥ 256) a frekvenci daleko
+od 0 a `fs/2`:
 
 | Okno        | 1. nula   | nejvyšší postranní lalok | koherentní zisk | ztráta mezi biny |
 |-------------|-----------|--------------------------|-----------------|------------------|
@@ -49,6 +50,12 @@ jiný kompromis. Hodnoty změřené programem:
 | Hann        | ±2 biny   | −31,5 dB                 | 0,50            | −1,42 dB         |
 | Hamming     | ±2 biny   | −42,7 dB                 | 0,54            | −1,75 dB         |
 | Blackman    | ±3 biny   | −58,1 dB                 | 0,42            | −1,10 dB         |
+
+Při krátkém okně se čísla trochu liší. Ve výchozím nastavení záložky
+(N = 64) ukáže panel u Hammingova okna nejvyšší postranní lalok −42,4 dB
+(při N = 128 −42,6 dB) a obdélníkové okno ztrátu mezi biny −3,79 dB místo
+−3,92 dB: u krátkého záznamu se k čáře přimíchá i její zrcadlo ze
+záporných frekvencí.
 
 - **Koherentní zisk** je průměrná hodnota okna. O tolik okno zeslabí
   amplitudu, proto ho program při výpočtu amplitudy vykompenzuje (dělí

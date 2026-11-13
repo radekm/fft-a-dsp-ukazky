@@ -67,6 +67,10 @@ sinusovku v 10,5 binu):
 | Hamming     | ±2 biny  | −42,4 dB                 | 0,54            | −1,74 dB      | −47,7 dB              |
 | Blackman    | ±3 biny  | −58,1 dB                 | 0,42            | −1,10 dB      | −76,5 dB              |
 
+U delších oken se čísla málo mění; jen Hammingův nejvyšší postranní lalok
+klesne z −42,4 dB (N = 64) na −42,7 dB (N ≥ 256), což je hodnota uváděná
+v literatuře.
+
 Zajímavost: Hamming má nižší *nejvyšší* postranní lalok než Hann, ale
 v binu 20 prosakuje víc. Jeho laloky totiž se vzdáleností klesají pomalu,
 kdežto Hannovy rychle (Hann je na krajích hladce nulový, Hamming končí na
