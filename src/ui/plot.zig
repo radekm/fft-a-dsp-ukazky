@@ -75,17 +75,26 @@ pub const Range = struct {
         return !(self.min <= self.max);
     }
 
-    /// Dá se rozsah zobrazit? Musí být konečný, delší než 10⁻¹² a delší než
-    /// miliardtina největší hodnoty na ose, jinak by se body slily kvůli přesnosti f64
-    /// a výpočty dílků by ztratily smysl.
+    /// Dá se rozsah zobrazit? Musí být konečný, ne příliš krátký
+    /// (viz `isTooShort`) a kratší než 10¹⁵.
     fn isUsable(self: Range) bool {
         if (!std.math.isFinite(self.min) or !std.math.isFinite(self.max)) return false;
         const length = self.span();
-        if (!std.math.isFinite(length) or !(length > 0)) return false;
+        if (!std.math.isFinite(length)) return false;
+        return !self.isTooShort() and length < 1e15;
+    }
+
+    /// Je rozsah kratší než 10⁻¹² nebo než tisícina největší hodnoty?
+    /// Kratší rozsah by ukazoval hlavně zaokrouhlovací šum a čísla na ose
+    /// by potřebovala tolik číslic, že by se nevešla vedle grafu. Takhle
+    /// mají nejvýš 6 znaků: kolem 51 jde přiblížit na rozsah 0,05 („51.13“),
+    /// kolem 0,9 na 0,0009 („0.9184“).
+    /// Absolutní dolní mez zajistí, že ani vzdálené body nepřetečou při
+    /// převodu na pixely do nekonečna.
+    fn isTooShort(self: Range) bool {
+        const length = self.span();
         const largest = @max(@abs(self.min), @abs(self.max));
-        // Absolutní dolní mez zajistí, že ani vzdálené body nepřetečou při
-        // převodu na pixely do nekonečna.
-        return length > largest * 1e-9 and length > 1e-12 and length < 1e15;
+        return !(length > largest * 1e-3 and length > 1e-12);
     }
 };
 
@@ -293,7 +302,7 @@ pub const Plot = struct {
 
         // Pozadí a rámeček kreslicí plochy.
         data_rect.fill(.{}, .{ .color = .{ .color = theme.fill.opacity(0.6) } });
-        drawGrid(transform, tick_font, scale, theme.text, self.options.x_tick_spacing);
+        drawGrid(transform, tick_font, scale, theme.text, self.options.x_tick_spacing, self.options.y_axis_width);
 
         // Křivky se kreslí jen dovnitř kreslicí plochy.
         const previous_clip = dvui.clip(data_rect);
@@ -608,9 +617,23 @@ pub fn allocPoints(count: usize) ?[]Point {
 
 /// Automatický rozsah z rozsahu dat: přidá okraj a ošetří prázdná data
 /// a data s jedinou hodnotou.
+///
+/// Data, která se liší jen zanedbatelně, bereme jako konstantní. Typicky
+/// jde o zaokrouhlovací šum: např. 0,11 · sin(π) v počítači nevyjde 0,
+/// ale asi 10⁻¹⁷. Graf pak ukáže vodorovnou čáru, ne zvětšený šum
+/// s osou plnou nul.
 fn autoRange(data: Range) Range {
     if (data.isEmpty()) return .{ .min = 0, .max = 1 };
-    if (data.span() == 0) return .{ .min = data.min - 1, .max = data.max + 1 };
+    if (data.isTooShort()) {
+        const center = (data.min + data.max) / 2;
+        // Okolí ±1 (jako dřív u stejných hodnot); u velkých hodnot ±1 %,
+        // aby rozsah sám nebyl „příliš krátký“.
+        const half = @max(1, @abs(center) * 0.01);
+        const constant: Range = .{ .min = center - half, .max = center + half };
+        // Okraj jako u ostatních dat, aby krajní dílek neležel přímo
+        // na okraji grafu a jeho číslo nezasahovalo do nadpisu.
+        return constant.withMargin(auto_margin);
+    }
     return data.withMargin(auto_margin);
 }
 
@@ -740,7 +763,7 @@ fn drawSeries(transform: Transform, series: Series, scale: f32) void {
 }
 
 /// Mřížka a čísla na osách.
-fn drawGrid(transform: Transform, font: dvui.Font, scale: f32, text_color: Color, x_tick_spacing: f32) void {
+fn drawGrid(transform: Transform, font: dvui.Font, scale: f32, text_color: Color, x_tick_spacing: f32, y_axis_width: f32) void {
     const rect = transform.rect;
     const minor_color = text_color.opacity(0.06);
     const major_color = text_color.opacity(0.16);
@@ -764,6 +787,13 @@ fn drawGrid(transform: Transform, font: dvui.Font, scale: f32, text_color: Color
     }
 
     // Vodorovné čáry a čísla osy y: dílek zhruba na každých 28 pixelů.
+    // Čísla se ořežou na pás vlevo od grafu, aby nikdy nepřetekla do panelu.
+    const label_clip: PhysicalRect = .{
+        .x = rect.x - (y_axis_width + 4) * scale,
+        .y = rect.y - line_height,
+        .w = (y_axis_width + 4) * scale,
+        .h = rect.h + 2 * line_height,
+    };
     const y_ticks = Ticks.init(transform.y, rect.h / scale / 28);
     for (y_ticks.first_index..y_ticks.end_index) |index| {
         const y_tick = y_ticks.value(index);
@@ -774,6 +804,8 @@ fn drawGrid(transform: Transform, font: dvui.Font, scale: f32, text_color: Color
         if (major) {
             const label = y_ticks.format(&buffer, y_tick);
             const width = font.textSize(label).w * scale;
+            const previous_clip = dvui.clip(label_clip);
+            defer dvui.clipSet(previous_clip);
             drawText(font, label, .{ .x = rect.x - width - 4 * scale, .y = py - line_height / 2 }, scale, text_color);
         }
     }
@@ -789,6 +821,11 @@ const Ticks = struct {
     minor: f64,
     /// Počet desetinných míst v číslech na ose.
     decimals: usize,
+    /// Psát čísla jako `2e-5` (velmi malé nebo velké hodnoty na ose)?
+    scientific: bool = false,
+    /// Řád hlavního kroku (major = 1, 2 nebo 5 × 10^step_exponent);
+    /// určuje, kolik platných číslic potřebuje vědecký zápis.
+    step_exponent: f64 = 0,
     /// Rozsah indexů jemných dílků, které leží v rozsahu osy: [first, end).
     /// Při neplatném rozsahu je prázdný.
     first_index: usize = 0,
@@ -827,17 +864,26 @@ const Ticks = struct {
         // Hodnotu omezíme, aby převod na celé číslo dostal vždy rozumné číslo.
         const needed = std.math.clamp(@ceil(-@log10(major) - 1e-9), 0, 20);
         const decimals: usize = @intFromFloat(needed);
+        // Hodnoty pod 10⁻⁴ nebo od 10⁶ výš by se v desetinném zápisu
+        // nevešly vedle grafu, proto vědecký zápis. Rozhoduje velikost
+        // hodnot, ne kroku: u malého rozsahu daleko od nuly (51,12 ± 0,02)
+        // by vědecký zápis dal samá stejná čísla „5.112e1“.
+        const largest = @max(@abs(range.min), @abs(range.max));
+        const scientific = largest < scientific_below or largest >= scientific_from;
+        const step_exponent = @floor(@log10(major) + 1e-9);
 
         const first = @ceil(range.min / minor);
         const last = @floor(range.max / minor);
         const count = last - first + 1;
         if (!std.math.isFinite(count) or count <= 0 or count > max_count) {
-            return .{ .major = major, .minor = minor, .decimals = decimals };
+            return .{ .major = major, .minor = minor, .decimals = decimals, .scientific = scientific, .step_exponent = step_exponent };
         }
         return .{
             .major = major,
             .minor = minor,
             .decimals = decimals,
+            .scientific = scientific,
+            .step_exponent = step_exponent,
             .first_index = 0,
             .end_index = @intFromFloat(count),
             .index_offset = first,
@@ -861,6 +907,14 @@ const Ticks = struct {
     fn format(self: Ticks, buffer: []u8, tick: f64) []const u8 {
         // Hodnota těsně kolem nuly by se vypsala jako „-0“.
         const clean = if (self.isZero(tick)) 0 else tick;
+        if (self.scientific) {
+            if (clean == 0) return "0";
+            // Mantisa potřebuje tolik desetinných míst, kolik řádů dělí
+            // hodnotu od kroku (krok 5e-6 u hodnoty 1.5e-5 → 1 místo).
+            const exponent = @floor(@log10(@abs(clean)));
+            const digits: usize = @intFromFloat(std.math.clamp(exponent - self.step_exponent, 0, 6));
+            return formatScientific(buffer, clean, digits);
+        }
         return std.fmt.bufPrint(buffer, "{[value]d:.[decimals]}", .{ .value = clean, .decimals = self.decimals }) catch "?";
     }
 };
@@ -891,9 +945,36 @@ fn drawAxisLabels(options: Options, content: PhysicalRect, data_rect: PhysicalRe
     }) catch |err| log.warn("cannot draw text error={s}", .{@errorName(err)});
 }
 
+/// Pod touto velikostí hodnot se čísla píšou vědecky, např. `2e-5`.
+const scientific_below = 1e-4;
+/// Od této velikosti hodnot se čísla píšou vědecky, např. `1.5e6`.
+const scientific_from = 1e6;
+
+/// Vědecký zápis s nejvýš `digits` desetinnými místy mantisy, bez
+/// zbytečných nul (1.50e-5 → „1.5e-5“, 2.0e6 → „2e6“).
+fn formatScientific(buffer: []u8, value: f64, digits: usize) []const u8 {
+    const text = std.fmt.bufPrint(buffer, "{[value]e:.[digits]}", .{ .value = value, .digits = digits }) catch return "?";
+    const e_index = std.mem.findScalar(u8, text, 'e') orelse return text;
+    var mantissa: []const u8 = text[0..e_index];
+    if (std.mem.findScalar(u8, mantissa, '.') != null) {
+        mantissa = std.mem.trimEnd(u8, mantissa, "0");
+        mantissa = std.mem.trimEnd(u8, mantissa, ".");
+    }
+    // Mantisu posuneme až k exponentu (zkrácení vždy jen ubírá znaky).
+    const exponent_part = text[e_index..];
+    std.mem.copyForwards(u8, buffer[mantissa.len..], exponent_part);
+    return buffer[0 .. mantissa.len + exponent_part.len];
+}
+
 /// Formátuje souřadnici v popisku: nejvýš 4 desetinná místa bez zbytečných
-/// nul na konci (25.0000 → „25“, 0.70711 → „0.7071“).
+/// nul na konci (25.0000 → „25“, 0.70711 → „0.7071“). Velmi malá a velká
+/// čísla vědecky se 4 platnými číslicemi (0.0000123 → „1.23e-5“).
 pub fn formatCoordinate(buffer: []u8, value: f64) []const u8 {
+    if (value != 0 and std.math.isFinite(value) and
+        (@abs(value) < scientific_below or @abs(value) >= scientific_from))
+    {
+        return formatScientific(buffer, value, 3);
+    }
     const text = std.fmt.bufPrint(buffer, "{d:.4}", .{value}) catch return "?";
     var trimmed = std.mem.trimEnd(u8, text, "0");
     trimmed = std.mem.trimEnd(u8, trimmed, ".");
@@ -1045,8 +1126,50 @@ test "format coordinate trims zeros" {
     var buffer: [32]u8 = undefined;
     try std.testing.expectEqualStrings("25", formatCoordinate(&buffer, 25));
     try std.testing.expectEqualStrings("0.7071", formatCoordinate(&buffer, 0.70711));
-    try std.testing.expectEqualStrings("0", formatCoordinate(&buffer, -0.00001));
     try std.testing.expectEqualStrings("-1.5", formatCoordinate(&buffer, -1.5));
+    try std.testing.expectEqualStrings("0", formatCoordinate(&buffer, 0));
+    // Velmi malá a velká čísla vědecky, ne jako 0 nebo dlouhá řada číslic.
+    try std.testing.expectEqualStrings("-1e-5", formatCoordinate(&buffer, -0.00001));
+    try std.testing.expectEqualStrings("1.346e-17", formatCoordinate(&buffer, 1.3456e-17));
+    try std.testing.expectEqualStrings("2.5e6", formatCoordinate(&buffer, 2.5e6));
+}
+
+test "ticks switch to scientific notation for tiny steps and huge values" {
+    var buffer: [32]u8 = undefined;
+    const tiny = Ticks.init(.{ .min = 0, .max = 4e-5 }, 10);
+    try std.testing.expect(tiny.scientific);
+    try std.testing.expectApproxEqRel(5e-6, tiny.major, 1e-9);
+    try std.testing.expectEqualStrings("1.5e-5", tiny.format(&buffer, 1.5e-5));
+    try std.testing.expectEqualStrings("2e-5", tiny.format(&buffer, 2e-5));
+    try std.testing.expectEqualStrings("0", tiny.format(&buffer, 0));
+    const huge = Ticks.init(.{ .min = 0, .max = 3e6 }, 6);
+    try std.testing.expect(huge.scientific);
+    try std.testing.expectEqualStrings("1.5e6", huge.format(&buffer, 1.5e6));
+    const normal = Ticks.init(.{ .min = -1.05, .max = 1.05 }, 5);
+    try std.testing.expect(!normal.scientific);
+    // Malý rozsah daleko od nuly zůstane desetinně.
+    const offset = Ticks.init(.{ .min = 51.120, .max = 51.130 }, 6);
+    try std.testing.expect(!offset.scientific);
+    try std.testing.expectEqualStrings("51.124", offset.format(&buffer, 51.124));
+    try std.testing.expectEqualStrings("-0.5", normal.format(&buffer, -0.5));
+}
+
+test "auto range treats rounding noise as a constant" {
+    // 0,11 · sin(π) a nula (stonky): rozpětí 10⁻¹⁷ je šum, ne data.
+    const noise = autoRange(.{ .min = 0, .max = 1.35e-17 });
+    try std.testing.expectApproxEqAbs(-1.1, noise.min, 1e-12);
+    try std.testing.expectApproxEqAbs(1.1, noise.max, 1e-12);
+    try std.testing.expect(noise.isUsable());
+    // Konstanta 5: okolí ±1 a okraj 5 %, tedy 3,9 až 6,1.
+    const constant = autoRange(.{ .min = 5, .max = 5 });
+    try std.testing.expectApproxEqAbs(3.9, constant.min, 1e-12);
+    try std.testing.expectApproxEqAbs(6.1, constant.max, 1e-12);
+    // Velká konstanta dostane rozsah, který jde zobrazit.
+    try std.testing.expect(autoRange(.{ .min = 1e12, .max = 1e12 }).isUsable());
+    // Běžná data jen s okrajem 5 %.
+    const normal = autoRange(.{ .min = 0, .max = 10 });
+    try std.testing.expectEqual(-0.5, normal.min);
+    try std.testing.expectEqual(10.5, normal.max);
 }
 
 test "ticks use nice steps" {
@@ -1081,6 +1204,9 @@ test "ticks are counted, not accumulated" {
 test "range usability" {
     try std.testing.expect((Range{ .min = 0, .max = 1 }).isUsable());
     try std.testing.expect(!(Range{ .min = 500, .max = 500 + 1e-10 }).isUsable());
+    // Přiblížení nejvýš na tisícinu velikosti hodnot.
+    try std.testing.expect((Range{ .min = 51, .max = 51.1 }).isUsable());
+    try std.testing.expect(!(Range{ .min = 51, .max = 51.01 }).isUsable());
     try std.testing.expect(!(Range{ .min = 1, .max = 1 }).isUsable());
     try std.testing.expect(!(Range{ .min = 0, .max = std.math.inf(f64) }).isUsable());
 }
