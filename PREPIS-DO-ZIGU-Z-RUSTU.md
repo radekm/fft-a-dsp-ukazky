@@ -13,7 +13,7 @@ během přepisu.
 | Oblast | Výsledek | Poznámka |
 |---|---|---|
 | Sestavení a závislosti | horší | DVUI stahuje i nepoužívané balíčky, SDL3 je potřeba mít v systému |
-| Písmo s českými znaky | horší | výchozí písmo DVUI nemá ř, ť, ň, ů, ě, ď |
+| Písmo s českými znaky | horší | výchozí písmo DVUI nemá ř, ť, ň, ů, ě, ď; řešeno vloženým písmem Inter |
 | Pozadí okna | horší (drobnost) | DVUI okno nevyplní, bez vlastního pozadí je černé |
 | Logování | horší | `std.log` nemá pojmenovaná pole jako `tracing` |
 
@@ -26,7 +26,10 @@ nepotřebuje žádnou systémovou knihovnu kromě ovladače OpenGL.
   (`zig build -fsys=sdl3`). Program se pak linkuje dynamicky proti
   `libSDL3.so`, ale SDL3 musí být v systému nainstalované. Bez přepínače
   `-fsys=sdl3` by si DVUI přeložil SDL3 ze zdrojů (a s ním i X11, Wayland,
-  dbus a další), což nechceme.
+  dbus a další), což nechceme. Přepínač nemusí psát uživatel: `build.zig`
+  před načtením DVUI zavolá
+  `b.systemIntegrationOption("sdl3", .{ .default = true })` a stačí pak
+  obyčejné `zig build`.
 - Balíčkovací systém Zigu stáhne všechny nelíné (non-lazy) závislosti DVUI,
   i když je program nepoužívá. Například balíček SDL2 se stahuje, i když
   linkujeme SDL3. Líné (lazy) závislosti se stáhnou, až když jsou opravdu
@@ -46,6 +49,15 @@ Výchozí písmo DVUI (Bitstream Vera Sans) obsahuje jen základní latinku
 a západoevropské znaky (á, é, í, ó, ú, ý, č, š, ž projdou, ale ř, ť, ň, ů, ě, ď
 se vykreslí jako prázdný obdélník). Z písem přibalených v DVUI má české znaky
 jen neproporcionální Hack, patkové Aleo a pixelové Pixelify Sans.
+
+Řešení: do programu je přes `@embedFile` vložené písmo Inter (běžný a tučný
+řez, asi 690 kB). Funkce `dvui.addFont` umí přidat jen běžný řez (tučnost
+z TTF souboru nečte), proto se oba řezy registrují jako
+`dvui.Font.Source` v poli `embedded_fonts` vlastního motivu odvozeného
+z `Theme.builtin.adwaita_light`. Vložení souboru do binárky je v Zigu
+jednodušší než v Rustu (`@embedFile` funguje stejně jako `include_bytes!`),
+ale nastavení písma v egui bylo zbytečné, protože výchozí písmo češtinu
+umělo.
 
 ## Pozadí okna
 

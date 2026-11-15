@@ -2,43 +2,52 @@
 
 ## Cíl
 
-Interaktivní desktopový program v Rustu (egui), na kterém si lze „osahat“
-FFT a digitální zpracování signálu (DSP): pohnu posuvníkem a hned vidím, co
-to udělá se signálem a jeho spektrem.
+Interaktivní desktopový program, na kterém si lze „osahat“ FFT a digitální
+zpracování signálu (DSP): pohnu posuvníkem a hned vidím, co to udělá se
+signálem a jeho spektrem.
 
 Program je učební pomůcka. Přednost má srozumitelnost před výkonem a úplností.
+
+Program vznikl v Rustu (egui), fáze 0–6. Teď se přepisuje do Zigu (DVUI),
+fáze 7. Rust verze je v `last-rust-version/` a slouží jako předloha.
 
 ## Rozhodnutí
 
 - FFT i ostatní algoritmy jsou vlastní implementace s českými komentáři.
 - Jen syntetické signály generované v programu (bez mikrofonu, přehrávání a WAV).
-- Povolené crates: viz `AGENTS.md`. Grafy kreslí `egui_plot`.
-- Texty v uživatelském rozhraní jsou česky.
-- Logování je strukturované (pojmenovaná pole, JSON do `logs/`).
+- Povolené závislosti: viz `AGENTS.md`. Grafy kreslí vlastní widget.
+- Texty v uživatelském rozhraní jsou česky. Písmo je Inter, vložené do programu.
+- Logování přes `std.log` na standardní výstup, hodnoty ve tvaru `klic=hodnota`.
 - Délka FFT je mocnina dvou (radix-2); kratší signál se doplní nulami.
+- SDL3 je systémová knihovna, linkuje se dynamicky.
+- Zkušenosti z přepisu se zapisují do `PREPIS-DO-ZIGU-Z-RUSTU.md`.
 
-## Struktura
+## Struktura (verze v Zigu)
 
 ```
+build.zig, build.zig.zon
 src/
-  main.rs          spuštění eframe
-  app.rs           stav aplikace, přepínání záložek
-  dsp/             čisté výpočty, bez egui
-    complex.rs     komplexní číslo
-    signal.rs      generátory signálů
-    fft.rs         DFT (pomalá) a FFT (radix-2), zpětná FFT
-    spectrum.rs    amplituda, decibely a fáze z výsledku FFT
-    window.rs      okénkové funkce
-    filter.rs      FIR a IIR filtry, frekvenční odezva
-    sampling.rs    převzorkování, rekonstrukce
+  main.zig         spuštění DVUI aplikace, logování, motiv a písmo
+  app.zig          stav aplikace, přepínání záložek
+  fonts/           písmo Inter a jeho licence
+  dsp/             čisté výpočty, bez DVUI
+    complex.zig    komplexní číslo
+    signal.zig     generátory signálů
+    fft.zig        DFT (pomalá) a FFT (radix-2), zpětná FFT
+    spectrum.zig   amplituda, decibely a fáze z výsledku FFT
+    window.zig     okénkové funkce
+    filter.zig     FIR a IIR filtry, frekvenční odezva
+    sampling.zig   převzorkování, rekonstrukce
   ui/              jedna záložka = jeden soubor
-    common.rs      věci společné pro více záložek
-    spectrum.rs
-    windows.rs
-    sampling.rs
-    filters.rs
+    plot.zig       vlastní widget grafu
+    common.zig     věci společné pro více záložek
+    spectrum.zig
+    windows.zig
+    sampling.zig
+    filters.zig
 docs/              česká vysvětlení k jednotlivým tématům
   ucebnice/        pidi učebnice: krátké lekce pro začátečníky
+last-rust-version/ původní verze v Rustu
 ```
 
 ## Fáze
@@ -110,6 +119,29 @@ Pro snímky se mění výchozí hodnoty jen dočasně, tyto změny se necommituj
 - [x] 13. Konvoluce a FIR filtry
 - [x] 14. IIR filtr (biquad)
 - [x] 15. Shrnutí
+
+### Fáze 7 – přepis do Zigu (DVUI)
+Rust verze je předloha: stejné záložky, ovládání, výchozí hodnoty a čísla.
+
+- [x] Tag `last-rust-version`, přesun Rust verze do `last-rust-version/`,
+      založení `PREPIS-DO-ZIGU-Z-RUSTU.md`.
+- [x] Ověření prostředí: Zig 0.17.1, DVUI se systémovým SDL3, české znaky
+      písmem Inter.
+- [ ] Kostra: `build.zig`, `build.zig.zon`, okno se záložkami, motiv
+      s písmem Inter, logování, kontroly `zig fmt` a `zig build test`.
+- [ ] DSP: `complex`, `signal`, `fft`, `spectrum`, `window`, `filter`,
+      `sampling` včetně všech testů z Rust verze.
+- [ ] Widget grafu: osy s popisky a mřížkou, křivky, body, svislé čáry,
+      čárkovaný styl, legenda, výchozí rozsah os, přibližování a posun,
+      propojené osy více grafů, popisek se souřadnicemi při najetí myší.
+- [ ] Záložka Signály a spektrum.
+- [ ] Záložka Okna a prosakování.
+- [ ] Záložka Vzorkování a aliasing.
+- [ ] Záložka Filtry.
+- [ ] Porovnání s Rust verzí: stejná čísla a srovnatelné snímky všech záložek.
+- [ ] Shrnutí v `PREPIS-DO-ZIGU-Z-RUSTU.md`.
+- [ ] Na pokyn autora: aktualizace `README.md`, `docs/` a učebnice
+      (odkazy na kód, nové snímky).
 
 ## Možná později (mimo první verzi)
 
