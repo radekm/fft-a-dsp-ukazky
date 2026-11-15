@@ -230,7 +230,7 @@ proto i verze v Zigu používá tmavý motiv `adwaita_dark`.
 
 ## Záložka „Signály a spektrum“ (`src/ui/spectrum.zig`, `src/ui/common.zig`)
 
-Rozsahem kódu je záložka podobná Rust verzi (spectrum.zig asi 410 řádků,
+Rozsahem kódu je záložka podobná Rust verzi (spectrum.zig 434 řádků,
 spectrum.rs 453). Výpočty a čísla sedí: biny po 1 Hz, špičky 1,0 a 0,5 na
 50 Hz a 120 Hz, fáze sinusovky −90°.
 
