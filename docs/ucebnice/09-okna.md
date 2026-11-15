@@ -215,8 +215,8 @@ těsné „víc než“.
 - Další lekce: [10. Doplnění nulami a rozlišení](10-doplneni-nulami-a-rozliseni.md).
 - Předchozí lekce: [8. Prosakování](08-prosakovani.md).
 - Podrobnější text k záložce: [Okna a prosakování](../02-okna-a-prosakovani.md).
-- V kódu: `src/dsp/window.rs` – `cosine_terms` (koeficienty a0, a1, a2),
-  `window` (periodické okno), `apply_window`, `analyze_window` (koherentní
+- V kódu: `src/dsp/window.zig` – `cosineTerms` (koeficienty a0, a1, a2),
+  `window` (periodické okno), `applyWindow`, `analyzeWindow` (koherentní
   zisk, první nula, nejvyšší postranní lalok). Dělení součtem vah je
-  v `src/ui/windows.rs` (funkce `windowed_spectrum`) a v
-  `src/dsp/spectrum.rs` (parametr `window_sum`).
+  v `src/ui/windows.zig` (funkce `windowedSpectrum`) a v
+  `src/dsp/spectrum.zig` (parametr `window_sum`).

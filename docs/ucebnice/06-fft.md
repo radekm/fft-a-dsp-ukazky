@@ -102,11 +102,11 @@ N = 1024). V sekci **Výpočet**:
 
 Nastav **N = 4096** a přepínej mezi FFT a DFT. Spektrum se nezmění, změní
 se jen doba transformace. Na našem testovacím počítači (program přeložený
-s `--release`) vyšlo:
+s `-Doptimize=ReleaseSafe`) vyšlo:
 
-![Doba transformace: FFT 136 µs, DFT 239 198 µs při N = 4096](img/06-fft-proti-dft.png)
+![Doba transformace: FFT 90 µs, DFT 225 384 µs při N = 4096](img/06-fft-proti-dft.png)
 
-FFT 136 µs, DFT 239 198 µs, tedy asi **1760× rychlejší**. U tebe budou čísla
+FFT 90 µs, DFT 225 384 µs, tedy asi **2500× rychlejší**. U tebe budou čísla
 jiná, ale poměr bude podobně velký. Je dokonce větší než 683 z tabulky:
 DFT v programu počítá pro každý součin znovu kosinus a sinus, kdežto FFT
 otáčí ručičku `w` jen násobením.
@@ -119,9 +119,9 @@ otáčí ručičku `w` jen násobením.
 2. **Dvojnásobné N.** S FFT měň N: 1024 → 2048 → 4096 a sleduj dobu
    transformace. → Roste jen o něco víc než dvakrát s každým zdvojením.
    S DFT roste čtyřikrát, protože `(2N)² = 4N²`. (Měření stejných funkcí
-   na testovacím počítači: FFT pro N = 1024, 2048 a 4096 trvala 19,7;
-   43,6 a 97,3 µs. DFT pro N = 1024 trvala 18,5 ms a pro N = 4096 289 ms,
-   tedy 16× déle.)
+   na testovacím počítači: FFT pro N = 1024, 2048 a 4096 trvala 19; 40
+   a 86 µs. DFT pro N = 1024 trvala 13,9 ms a pro N = 4096 199 ms,
+   tedy 14× déle.)
 3. **DFT a posuvník.** Při DFT a N = 4096 táhni posuvníkem amplitudy. →
    Každá změna posuvníku teď znamená asi čtvrt sekundy výpočtu, takže
    program reaguje pomalu. S FFT reaguje okamžitě.
@@ -235,7 +235,7 @@ zrcadlo (opačný úhel).
 
 - Další lekce: [7. Decibely a fáze ve spektru](07-decibely-a-faze.md).
 - Předchozí lekce: [5. DFT – komplexní čísla a biny](05-dft-komplexni-cisla-a-biny.md).
-- V kódu: `src/dsp/fft.rs` – `bit_reverse_permutation` a `reverse_bits`
-  (přerovnání), `butterfly_stage` (jedno patro motýlků), `transform`
+- V kódu: `src/dsp/fft.zig` – `bitReversePermutation` a `reverseBits`
+  (přerovnání), `butterflyStage` (jedno patro motýlků), `transform`
   (společné jádro FFT i zpětné FFT), `ifft` (dělení `N`). Program měří
-  dobu a chybu zpětné FFT v `src/ui/spectrum.rs` (funkce `compute`).
+  dobu a chybu zpětné FFT v `src/ui/spectrum.zig` (funkce `compute`).

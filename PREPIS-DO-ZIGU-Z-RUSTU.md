@@ -406,3 +406,25 @@ uvolní přesně to, co už existuje. V Rustu to řeší `Drop` automaticky.
 **Doplněno do widgetu grafu:** čárkovaná lomená čára (zesílení filtru
 ve spektru, v egui `LineStyle::dashed_loose`) a menší rozestup dílků
 na ose x pro úzké grafy (v egui `AxisHints::label_spacing`).
+
+## Dokumentace a snímky do učebnice
+
+Odkazy na kód v dokumentaci šly převést skoro mechanicky: soubory `.rs`
+na `.zig` a názvy funkcí ze `snake_case` na `camelCase` (`one_sided_spectrum`
+→ `oneSidedSpectrum`). Konstanty se v Zigu píší malými písmeny (`DB_FLOOR`
+→ `db_floor`). Všechna čísla v učebnici zůstala platná, protože DSP počítá
+stejně. Změnily se jen naměřené doby výpočtu v lekci 6.
+
+Všech 48 snímků se pořídilo znovu ve světlém motivu stejným postupem jako
+v Rust verzi: dočasná kopie programu (git worktree mimo repozitář) nastaví
+stav podle proměnné prostředí `SHOT`, program běží ve virtuálním displeji
+Xvfb, myš a klávesnici ovládá XTest a snímek pořídí `import`. Celé snímky
+a výřezy se pak skládají přes ImageMagick.
+
+Při focení se ukázaly dvě drobnosti ve widgetu grafu, které jsme opravili
+i v programu:
+- Popisek u kurzoru se u vzorku přichytil ke spojitému signálu, protože
+  ten má body hustě (0,3 px od sebe). Samostatné body (stonky, puntíky)
+  teď mají při najetí myší přednost před lomenou čárou.
+- Frekvence složek se v políčku ukazují bez nul na konci („300“ místo
+  „300.00“), jinak by se delší čísla do políčka nevešla.

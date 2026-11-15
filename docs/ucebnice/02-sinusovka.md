@@ -197,6 +197,6 @@ amplitudu 2.00 a fázi 90°. Kontrola: v čase 0 má být hodnota
 
 - Další lekce: [3. Skládání signálů a myšlenka spektra](03-skladani-a-spektrum.md).
 - Předchozí lekce: [1. Signál a vzorek](01-signal-a-vzorek.md).
-- V kódu: `src/dsp/signal.rs`, funkce `component_value` počítá přesně
+- V kódu: `src/dsp/signal.zig`, funkce `componentValue` počítá přesně
   `A · sin(2π · f · t + φ)` (fázi převádí ze stupňů na radiány)
-  a `waveform_value` vrací hodnotu tvaru vlny pro daný úhel.
+  a `waveformValue` vrací hodnotu tvaru vlny pro daný úhel.

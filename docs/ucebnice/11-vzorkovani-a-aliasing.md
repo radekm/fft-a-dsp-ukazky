@@ -226,8 +226,8 @@ vzorky nulové a zmizí úplně.
 - Další lekce: [12. Rekonstrukce ze vzorků](12-rekonstrukce.md).
 - Předchozí lekce: [10. Doplnění nulami a rozlišení](10-doplneni-nulami-a-rozliseni.md).
 - Podrobnější text k záložce: [Vzorkování a aliasing](../03-vzorkovani-a-aliasing.md).
-- V kódu: `src/dsp/sampling.rs`, funkce `alias_frequency` (vzorec výše)
-  a `sample`. Spektra v záložce počítá `src/ui/sampling.rs` (funkce
+- V kódu: `src/dsp/sampling.zig`, funkce `aliasFrequency` (vzorec výše)
+  a `sample`. Spektra v záložce počítá `src/ui/sampling.zig` (funkce
   `compute`): spojitý signál nahrazuje vzorkování 2048 Hz, spektrum po
   navzorkování se počítá pomalou DFT, protože počet vzorků (`fs`) obvykle
   není mocnina dvou.

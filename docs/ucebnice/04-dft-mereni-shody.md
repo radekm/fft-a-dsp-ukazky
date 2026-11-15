@@ -253,6 +253,6 @@ V programu: odškrtni všechny složky a nastav **stejnosměrnou složku** na
 
 - Další lekce: [5. DFT – komplexní čísla a biny](05-dft-komplexni-cisla-a-biny.md).
 - Předchozí lekce: [3. Skládání signálů a myšlenka spektra](03-skladani-a-spektrum.md).
-- V kódu: `src/dsp/fft.rs`, funkce `dft` – dvojitý cyklus přes `k` a `n`,
+- V kódu: `src/dsp/fft.zig`, funkce `dft` – dvojitý cyklus přes `k` a `n`,
   který násobí vzorky otáčením `e^(−j·2π·k·n/N)`. Co znamená zápis s `j`,
   vysvětlí příští lekce: je to právě dvojice „kosinus a sinus“.

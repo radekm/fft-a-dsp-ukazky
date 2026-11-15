@@ -219,7 +219,7 @@ znatelným hrbolkem v prosakování.
 - Další lekce: [9. Okna](09-okna.md).
 - Předchozí lekce: [7. Decibely a fáze ve spektru](07-decibely-a-faze.md).
 - Podrobnější text k záložce: [Okna a prosakování](../02-okna-a-prosakovani.md).
-- V kódu: `src/dsp/window.rs` – úvodní komentář o prosakování,
-  `window_response` (spektrum okna) a `analyze_window` (první nula
-  a nejvyšší postranní lalok). Výpočet záložky je v `src/ui/windows.rs`
+- V kódu: `src/dsp/window.zig` – úvodní komentář o prosakování,
+  `windowResponse` (spektrum okna) a `analyzeWindow` (první nula
+  a nejvyšší postranní lalok). Výpočet záložky je v `src/ui/windows.zig`
   (funkce `compute`).

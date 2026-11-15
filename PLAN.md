@@ -17,6 +17,7 @@ fáze 7. Rust verze je v `last-rust-version/` a slouží jako předloha.
 - Jen syntetické signály generované v programu (bez mikrofonu, přehrávání a WAV).
 - Povolené závislosti: viz `AGENTS.md`. Grafy kreslí vlastní widget.
 - Texty v uživatelském rozhraní jsou česky. Písmo je Inter, vložené do programu.
+- Světlý motiv (přání autora); snímky v učebnici jsou ve světlém motivu.
 - Logování přes `std.log` na standardní výstup, hodnoty ve tvaru `klic=hodnota`.
 - Délka FFT je mocnina dvou (radix-2); kratší signál se doplní nulami.
 - SDL3 je systémová knihovna, linkuje se dynamicky.
@@ -140,8 +141,8 @@ Rust verze je předloha: stejné záložky, ovládání, výchozí hodnoty a č�
 - [x] Záložka Filtry.
 - [x] Porovnání s Rust verzí: stejná čísla a srovnatelné snímky všech záložek.
 - [x] Shrnutí v `PREPIS-DO-ZIGU-Z-RUSTU.md`.
-- [ ] Na pokyn autora: aktualizace `README.md`, `docs/` a učebnice
-      (odkazy na kód, nové snímky).
+- [x] Na pokyn autora: aktualizace `README.md`, `docs/` a učebnice
+      (odkazy na kód, nové snímky ve světlém motivu).
 
 ## Možná později (mimo první verzi)
 

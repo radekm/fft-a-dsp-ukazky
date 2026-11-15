@@ -1,11 +1,16 @@
 # FFT a DSP – ukázky
 
-Interaktivní desktopový program v Rustu (egui), na kterém si lze vyzkoušet
-FFT a digitální zpracování signálu (DSP). Je to učební pomůcka: přednost má
-srozumitelnost před výkonem.
+Interaktivní desktopový program v Zigu (grafické rozhraní DVUI), na kterém si
+lze vyzkoušet FFT a digitální zpracování signálu (DSP). Je to učební pomůcka:
+přednost má srozumitelnost před výkonem.
 
 Stav: hotové jsou všechny čtyři záložky i dokumentace. Plán je
 v [PLAN.md](PLAN.md), pravidla pro práci na projektu v [AGENTS.md](AGENTS.md).
+
+Program původně vznikl v Rustu (egui). Tato verze je v adresáři
+[last-rust-version/](last-rust-version/) a v gitu pod tagem
+`last-rust-version`. Zkušenosti z přepisu do Zigu jsou
+v [PREPIS-DO-ZIGU-Z-RUSTU.md](PREPIS-DO-ZIGU-Z-RUSTU.md).
 
 ## Záložky
 
@@ -16,14 +21,15 @@ v [PLAN.md](PLAN.md), pravidla pro práci na projektu v [AGENTS.md](AGENTS.md).
 
 ## Překlad a spuštění
 
-Je potřeba stabilní Rust 1.95 nebo novější.
+Je potřeba Zig 0.17.1 a v systému musí být nainstalovaná knihovna SDL3.
+Program se proti ní linkuje dynamicky. Ostatní závislosti (DVUI) stáhne
+Zig sám.
 
 ```
-cargo run --release
+zig build run -Doptimize=ReleaseSafe
 ```
 
-Na Linuxu program běží přes X11 (pod Waylandem přes XWayland) a potřebuje
-ovladač s OpenGL.
+Přeložený program je pak v `zig-out/bin/fft-dsp-demos`.
 
 ## Dokumentace
 
@@ -36,21 +42,23 @@ a cvičeními s řešením.
 
 ## Logování
 
-Program loguje strukturovaně: každá událost má zprávu a pojmenovaná pole.
-Čitelná podoba jde na standardní chybový výstup, JSON (jeden objekt na řádek)
-do souboru `logs/fft-dsp-demos.RRRR-MM-DD.jsonl` v pracovním adresáři;
-uchovává se posledních 7 dní.
-
-Výchozí úroveň je `info`. Podrobnější log zapne proměnná prostředí:
+Program loguje na standardní výstup, jedna zpráva na řádek, například:
 
 ```
-LOG_LEVEL=debug cargo run --release
+info(app): tab selected tab=windows
+```
+
+Proměnné hodnoty jsou na konci zprávy ve tvaru `klic=hodnota`. Výchozí
+úroveň je `info`. Podrobnější log zapne proměnná prostředí:
+
+```
+LOG_LEVEL=debug zig build run
 ```
 
 ## Kontrola kódu
 
 ```
-cargo fmt --check
-cargo clippy --all-targets -- -D warnings
-cargo test
+zig fmt --check build.zig build.zig.zon src
+zig build
+zig build test
 ```

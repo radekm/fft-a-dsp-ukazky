@@ -15,7 +15,7 @@ Každá lekce se dá přečíst za 10 až 15 minut a má stejnou stavbu:
 7. **Otázky k zamyšlení** a **cvičení** s řešením (skrytá, rozbal kliknutím).
 8. **Kam dál** – další lekce a místo v kódu.
 
-Program spustíš příkazem `cargo run --release` (viz [README](../../README.md)).
+Program spustíš příkazem `zig build run` (viz [README](../../README.md)).
 Stručnější přehled teorie ke každé záložce je v [docs/](../README.md);
 učebnice jde pomaleji a po menších krocích.
 
@@ -42,14 +42,15 @@ učebnice jde pomaleji a po menších krocích.
 
 ## Jak ovládat grafy
 
-- tažením myši se graf posouvá,
+- tažením myši se graf posouvá, kolečkem myši také (se Shiftem vodorovně),
 - kolečkem myši s klávesou Ctrl se zvětšuje a zmenšuje,
 - dvojklik vrátí výchozí zobrazení,
 - najetí myší do grafu ukáže popisek se souřadnicemi; blízko bodu křivky
   se popisek k bodu přichytí a ukáže název křivky a přesné hodnoty bodu,
-- přesnou hodnotu posuvníku zadáš kliknutím na číslo vedle něj, napsáním
-  hodnoty a klávesou Enter. Program používá desetinnou tečku (`0.50`),
-  text lekcí desetinnou čárku (0,5).
+- přesnou hodnotu posuvníku zadáš kliknutím na číslo vedle něj: smaž ho
+  (nebo označ klávesami Ctrl + A) a napiš novou hodnotu, program ji použije
+  už během psaní. Program používá desetinnou tečku (`0.50`), text lekcí
+  desetinnou čárku (0,5).
 
 Obrázky v lekcích jsou snímky programu; barvy a rozložení odpovídají
 tomu, co uvidíš na obrazovce.

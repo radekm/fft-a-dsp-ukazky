@@ -73,7 +73,7 @@ je vidět tvar čáry i to, co leží mezi původními biny. **Rozlišení se al
 nezlepší:** šířka hlavního laloku závisí na délce skutečného signálu, ne na
 délce FFT. Doplnění nulami spektrum jen hustěji „navzorkuje“.
 
-V kódu: `src/dsp/window.rs`.
+V kódu: `src/dsp/window.zig`.
 
 ## Co zkoušet
 

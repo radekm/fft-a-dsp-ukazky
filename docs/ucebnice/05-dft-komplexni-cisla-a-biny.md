@@ -254,7 +254,7 @@ fs/N: 11.7 Hz“ a „Délka záznamu N/fs: 85.3 ms“.
 
 - Další lekce: [6. FFT a proč je rychlá](06-fft.md).
 - Předchozí lekce: [4. DFT jako měření shody](04-dft-mereni-shody.md).
-- V kódu: `src/dsp/complex.rs` (komplexní číslo: `from_polar`,
-  `magnitude`, `phase`, násobení), `src/dsp/fft.rs` (funkce `dft`),
-  `src/dsp/spectrum.rs` (funkce `one_sided_spectrum`: biny 0 až `N/2`,
+- V kódu: `src/dsp/complex.zig` (komplexní číslo: `fromPolar`,
+  `magnitude`, `phase`, násobení), `src/dsp/fft.zig` (funkce `dft`),
+  `src/dsp/spectrum.zig` (funkce `oneSidedSpectrum`: biny 0 až `N/2`,
   násobení dvěma kromě binu 0 a `N/2`, převod na fázi ve stupních).

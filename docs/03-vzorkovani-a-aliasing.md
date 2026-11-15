@@ -56,7 +56,7 @@ Přesná rekonstrukce potřebuje nekonečně mnoho vzorků. Program proto počí
 i se vzorky jednu sekundu před a za zobrazeným úsekem, aby byla obnova
 přesná i u jeho okrajů.
 
-V kódu: `src/dsp/sampling.rs`.
+V kódu: `src/dsp/sampling.zig`.
 
 ## Jak záložka počítá spektra
 

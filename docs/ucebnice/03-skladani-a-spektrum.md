@@ -235,6 +235,6 @@ i na fázi. Při fázi 0° by vyšla čára 2, při 180° nula, při 90° něco 
 - Další lekce: [4. DFT jako měření shody](04-dft-mereni-shody.md).
 - Předchozí lekce: [2. Sinusovka](02-sinusovka.md).
 - Podrobnější text k záložce: [Signály a spektrum](../01-signaly-a-spektrum.md).
-- V kódu: `src/dsp/signal.rs` – funkce `value_at` sčítá všechny zapnuté
-  složky a stejnosměrnou složku, `waveform_value` počítá tvary obdélník,
+- V kódu: `src/dsp/signal.zig` – funkce `valueAt` sčítá všechny zapnuté
+  složky a stejnosměrnou složku, `waveformValue` počítá tvary obdélník,
   pila a trojúhelník.

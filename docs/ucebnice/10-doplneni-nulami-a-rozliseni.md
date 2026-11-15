@@ -180,7 +180,7 @@ ukáže dvě čáry s výškou 1,00 (u 50 a 50,25 Hz). Při N = 256 (biny po
 - Další lekce: [11. Vzorkování a aliasing](11-vzorkovani-a-aliasing.md).
 - Předchozí lekce: [9. Okna](09-okna.md).
 - Podrobnější text k záložce: [Okna a prosakování](../02-okna-a-prosakovani.md).
-- V kódu: `src/dsp/window.rs`, funkce `zero_pad` (doplnění nulami)
-  a `window_response` (spektrum okna z okna doplněného nulami na
+- V kódu: `src/dsp/window.zig`, funkce `zeroPad` (doplnění nulami)
+  a `windowResponse` (spektrum okna z okna doplněného nulami na
   nejméně 16 384 bodů). Při doplnění se amplituda dělí součtem vah
-  **bez** přidaných nul (`src/dsp/spectrum.rs`, `window_sum`).
+  **bez** přidaných nul (`src/dsp/spectrum.zig`, `window_sum`).

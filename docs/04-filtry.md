@@ -101,7 +101,7 @@ Program koeficienty počítá podle známé „kuchařky“ R. Bristow-Johnsona
   roste nade všechny meze). Filtry z kuchařky jsou pro `Q > 0` a
   `0 < f0 < fs/2` vždy stabilní.
 
-V kódu: `src/dsp/filter.rs`.
+V kódu: `src/dsp/filter.zig`.
 
 ## Co zkoušet
 
@@ -110,7 +110,7 @@ sinusovka 200 Hz a šum. Výchozí filtr: FIR dolní propust 100 Hz,
 `M = 61`, okno Hamming.
 
 1. **Filtrace ve spektru.** Výstup (modře) je vstup (šedě) posunutý dolů
-   o zesílení filtru (žlutá čárkovaná). Sinusovka 200 Hz i šum nad 100 Hz
+   o zesílení filtru (oranžová čárkovaná). Sinusovka 200 Hz i šum nad 100 Hz
    zmizí, v časovém grafu zůstane čistá sinusovka 20 Hz.
 2. **Zpoždění.** Přibliž si začátek časového grafu: výstup je posunutý
    o 30 vzorků (30 ms) a prvních 60 ms trvá přechodový děj.

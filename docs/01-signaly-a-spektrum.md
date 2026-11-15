@@ -65,7 +65,7 @@ pořadí, které opakované dělení na sudé a liché vytvoří.
 v exponentu a dělením `N`. Program ukazuje, s jakou chybou se signál po cestě
 tam a zpět vrátí – je na úrovni zaokrouhlovacích chyb (kolem 10⁻¹⁴).
 
-V kódu: `src/dsp/fft.rs`, převod na amplitudu a fázi v `src/dsp/spectrum.rs`.
+V kódu: `src/dsp/fft.zig`, převod na amplitudu a fázi v `src/dsp/spectrum.zig`.
 
 ## Co zkoušet
 

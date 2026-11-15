@@ -226,7 +226,7 @@ Program ukazuje přesně tyto hodnoty na 100 Hz.
 - Další lekce: [15. Shrnutí](15-shrnuti.md).
 - Předchozí lekce: [13. Konvoluce a FIR filtry](13-konvoluce-a-fir.md).
 - Podrobnější text k záložce: [Filtry](../04-filtry.md).
-- V kódu: `src/dsp/filter.rs` – `design_biquad` (vzorce z kuchařky),
-  `biquad_filter` (rovnice výše, „přímá forma I“),
-  `biquad_impulse_response`, `frequency_response` (charakteristika
+- V kódu: `src/dsp/filter.zig` – `designBiquad` (vzorce z kuchařky),
+  `biquadFilter` (rovnice výše, „přímá forma I“),
+  `biquadImpulseResponse`, `frequencyResponse` (charakteristika
   z koeficientů `b` a `a`).

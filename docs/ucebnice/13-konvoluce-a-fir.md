@@ -118,7 +118,7 @@ Záložka **Filtry**, výchozí stav: `fs` = 1000 Hz (pevně), vstup sinus
   −52,3 dB. Na 200 Hz je zesílení −62,1 dB.
 - **Signál před a po filtraci** (vlevo dole): šedý vstup, modrý výstup.
 - **Spektrum před a po filtraci** (vpravo dole, s oknem Hann): šedý vstup,
-  modrý výstup, žlutá čárkovaná charakteristika filtru. Čára 200 Hz
+  modrý výstup, oranžová čárkovaná charakteristika filtru. Čára 200 Hz
   klesla z −6,3 dB na −68,4 dB, tedy přesně o zesílení filtru
   (−6,3 − 62,1). Šum nad 100 Hz klesl stejně.
 
@@ -251,7 +251,7 @@ strmostí – nebo se použije IIR filtr (lekce 14).
 - Další lekce: [14. IIR filtr – biquad](14-iir-biquad.md).
 - Předchozí lekce: [12. Rekonstrukce ze vzorků](12-rekonstrukce.md).
 - Podrobnější text k záložce: [Filtry](../04-filtry.md).
-- V kódu: `src/dsp/filter.rs` – `convolve` (konvoluce), `design_fir`,
-  `windowed_low_pass` (sinc × okno, normování součtem),
-  `spectral_inversion` (horní propust), `frequency_response`. Symetrické
-  okno je `symmetric_window` v `src/dsp/window.rs`.
+- V kódu: `src/dsp/filter.zig` – `convolve` (konvoluce), `designFir`,
+  `windowedLowPass` (sinc × okno, normování součtem),
+  `spectralInversion` (horní propust), `frequencyResponse`. Symetrické
+  okno je `symmetricWindow` v `src/dsp/window.zig`.

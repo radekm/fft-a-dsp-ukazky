@@ -182,7 +182,7 @@ ale nabízí nejvýš 4096 (dvě zdvojnásobení, −6 dB, tedy asi −76 až
 
 - Další lekce: [8. Prosakování](08-prosakovani.md).
 - Předchozí lekce: [6. FFT a proč je rychlá](06-fft.md).
-- V kódu: `src/dsp/spectrum.rs` – `one_sided_spectrum` počítá
+- V kódu: `src/dsp/spectrum.zig` – `oneSidedSpectrum` počítá
   `amplitude_db = 20·log₁₀(amplituda)` (nejméně −240 dB) a fázi ve
   stupních; pod amplitudou 10⁻⁹ fázi nastaví na 0. Ořez grafu na −120 dB
-  je v `src/ui/spectrum.rs` (`DB_FLOOR`).
+  je v `src/ui/spectrum.zig` (`db_floor`).

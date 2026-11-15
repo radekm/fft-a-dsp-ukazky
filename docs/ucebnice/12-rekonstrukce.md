@@ -196,6 +196,6 @@ kopec vyšší než samotné vzorky.
 - Další lekce: [13. Konvoluce a FIR filtry](13-konvoluce-a-fir.md).
 - Předchozí lekce: [11. Vzorkování a aliasing](11-vzorkovani-a-aliasing.md).
 - Podrobnější text k záložce: [Vzorkování a aliasing](../03-vzorkovani-a-aliasing.md).
-- V kódu: `src/dsp/sampling.rs`, funkce `sinc` a `reconstruct` (součet
-  přes všechny vzorky). Okraj 1 s je konstanta `MARGIN_S` v
-  `src/ui/sampling.rs`.
+- V kódu: `src/dsp/sampling.zig`, funkce `sinc` a `reconstruct` (součet
+  přes všechny vzorky). Okraj 1 s je konstanta `margin_s` v
+  `src/ui/sampling.zig`.

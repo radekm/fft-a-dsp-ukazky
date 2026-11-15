@@ -170,7 +170,7 @@ aspoň `2 / 3 Hz ≈ 0,67 s` (lekce 10).
 - Předchozí lekce: [14. IIR filtr – biquad](14-iir-biquad.md).
 - Zpět na [obsah učebnice](README.md).
 - Stručné shrnutí teorie ke každé záložce: [docs/](../README.md).
-- Celý kód výpočtů je v `src/dsp/` a má jednotkové testy (`cargo test`).
+- Celý kód výpočtů je v `src/dsp/` a má jednotkové testy (`zig build test`).
   Přehled, co je kde, je v tabulce „Kde je co v kódu“ v
   [docs/README.md](../README.md).
 - Témata, která učebnice nepokrývá a o kterých se dá číst dál:

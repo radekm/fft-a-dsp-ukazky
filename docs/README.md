@@ -18,7 +18,7 @@ jde pomaleji, po menších krocích a ke každé lekci má cvičení s řešení
 
 ## Společné ovládání grafů
 
-- tažením myši se graf posouvá,
+- tažením myši se graf posouvá, kolečkem myši také (se Shiftem vodorovně),
 - kolečkem myši s klávesou Ctrl se zvětšuje a zmenšuje,
 - dvojklik vrátí výchozí zobrazení,
 - najetí myší do grafu ukáže popisek se souřadnicemi; blízko bodu křivky
@@ -26,15 +26,18 @@ jde pomaleji, po menších krocích a ke každé lekci má cvičení s řešení
 
 ## Kde je co v kódu
 
-| Téma                     | Výpočty               | Záložka               |
-|--------------------------|-----------------------|-----------------------|
-| komplexní čísla          | `src/dsp/complex.rs`  |                       |
-| generátor signálů        | `src/dsp/signal.rs`   |                       |
-| DFT, FFT, zpětná FFT     | `src/dsp/fft.rs`      | `src/ui/spectrum.rs`  |
-| amplituda, dB, fáze      | `src/dsp/spectrum.rs` | `src/ui/spectrum.rs`  |
-| okna, doplnění nulami    | `src/dsp/window.rs`   | `src/ui/windows.rs`   |
-| vzorkování, sinc         | `src/dsp/sampling.rs` | `src/ui/sampling.rs`  |
-| konvoluce, FIR, IIR      | `src/dsp/filter.rs`   | `src/ui/filters.rs`   |
+| Téma                     | Výpočty                | Záložka                |
+|--------------------------|------------------------|------------------------|
+| komplexní čísla          | `src/dsp/complex.zig`  |                        |
+| generátor signálů        | `src/dsp/signal.zig`   |                        |
+| DFT, FFT, zpětná FFT     | `src/dsp/fft.zig`      | `src/ui/spectrum.zig`  |
+| amplituda, dB, fáze      | `src/dsp/spectrum.zig` | `src/ui/spectrum.zig`  |
+| okna, doplnění nulami    | `src/dsp/window.zig`   | `src/ui/windows.zig`   |
+| vzorkování, sinc         | `src/dsp/sampling.zig` | `src/ui/sampling.zig`  |
+| konvoluce, FIR, IIR      | `src/dsp/filter.zig`   | `src/ui/filters.zig`   |
+
+Grafy kreslí vlastní widget v `src/ui/plot.zig`, společné ovládací prvky
+jsou v `src/ui/common.zig`.
 
 Výpočty v `src/dsp/` nezávisí na grafickém rozhraní a mají jednotkové testy
-(`cargo test`), které ověřují i čísla uvedená v těchto textech.
+(`zig build test`), které ověřují i čísla uvedená v těchto textech.

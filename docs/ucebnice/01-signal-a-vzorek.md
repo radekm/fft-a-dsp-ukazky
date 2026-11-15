@@ -65,7 +65,7 @@ vzorek 4 ve 100 ms, vzorek 40 v 1 s.
 
 ## V programu
 
-Spusť program (`cargo run --release`) a otevři záložku **Vzorkování
+Spusť program (`zig build run`) a otevři záložku **Vzorkování
 a aliasing**. Výchozí nastavení:
 
 - vlevo nahoře `fs` = **40 Hz**, pod ním „Perioda vzorkování 1/fs: 25.0 ms“,
@@ -101,7 +101,8 @@ Na jednu vlnu (od 0 do 0,2 s) tedy připadá právě 8 vzorků, protože
 `40 / 5 = 8`.
 
 Hodnotu posuvníku lze nastavit i přesně: klikni na číslo vedle posuvníku,
-napiš hodnotu a potvrď klávesou Enter.
+smaž ho (nebo ho označ klávesami Ctrl + A) a napiš novou hodnotu. Program
+ji použije už během psaní.
 
 ## Pokusy
 
@@ -228,6 +229,6 @@ v čase 0,2 s už patří další vlně).
 
 - Další lekce: [2. Sinusovka](02-sinusovka.md).
 - Podrobnější text k záložce: [Vzorkování a aliasing](../03-vzorkovani-a-aliasing.md).
-- V kódu: `src/dsp/signal.rs` (funkce `generate` a `value_at` – hodnota
-  signálu v libovolném čase), `src/dsp/sampling.rs` (funkce `sample`
-  a `sample_time` – vzorek `n` v čase `start + n / fs`).
+- V kódu: `src/dsp/signal.zig` (funkce `generate` a `valueAt` – hodnota
+  signálu v libovolném čase), `src/dsp/sampling.zig` (funkce `sample`
+  a `SampledSignal.sampleTime` – vzorek `n` v čase `start + n / fs`).
