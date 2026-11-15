@@ -40,8 +40,16 @@ jobs:
           echo "$RUNNER_TEMP/zig" >> "$GITHUB_PATH"
 
       # Webová verze nepotřebuje SDL3, závislosti (DVUI) stáhne Zig sám.
+      # Některé jsou na codeberg.org, který občas spojení odmítne
+      # („ProtocolError“); proto až tři pokusy. Stažené se neztratí.
       - name: Build web version
-        run: zig build web -Doptimize=ReleaseSmall
+        run: |
+          for attempt in 1 2 3; do
+            zig build web -Doptimize=ReleaseSmall && exit 0
+            echo "Build attempt $attempt failed, retrying in 30 s"
+            sleep 30
+          done
+          exit 1
 
       - uses: actions/upload-pages-artifact@v5
         with:
