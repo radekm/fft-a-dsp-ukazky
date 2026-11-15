@@ -4,6 +4,7 @@
 //! inicializaci, jeden snímek a ukončení.
 
 const std = @import("std");
+const builtin = @import("builtin");
 const dvui = @import("dvui");
 const build_options = @import("build_options");
 
@@ -41,7 +42,16 @@ pub const dvui_app: dvui.App = .{
 pub const main = dvui.App.main;
 pub const panic = dvui.App.panic;
 
-pub const std_options: std.Options = .{
+/// Webová verze (WebAssembly v prohlížeči). Nemá standardní výstup
+/// ani proměnné prostředí.
+const is_web = builtin.cpu.arch.isWasm();
+
+pub const std_options: std.Options = if (is_web) .{
+    // Na webu píše log do konzole prohlížeče funkce z webového backendu DVUI.
+    // `LOG_LEVEL` tu není, úroveň je pevně daná za překladu.
+    .log_level = default_log_level,
+    .logFn = dvui.App.logFn,
+} else .{
     // Za překladu propustíme všechny úrovně; filtruje až `logFn` podle
     // `runtime_log_level`, aby šla úroveň změnit bez nového překladu.
     .log_level = .debug,
@@ -92,7 +102,7 @@ fn logLevelFromEnvironment() std.log.Level {
 
 /// Spustí se jako první, ještě před otevřením okna.
 fn start() dvui.App.StartOptions {
-    runtime_log_level.store(@backingInt(logLevelFromEnvironment()), .monotonic);
+    if (!is_web) runtime_log_level.store(@backingInt(logLevelFromEnvironment()), .monotonic);
     log.info("application started version={s}", .{build_options.version});
 
     return .{
