@@ -291,7 +291,7 @@ nepotřebuje alokaci a dá se kopírovat jako hodnota.
 Čísla souhlasí s Rust verzí do posledního zobrazeného místa. Pro obdélníkové
 okno, N = 64 a frekvenci 10,5 binu ukazují obě verze první nulu ±1,00 binu,
 postranní lalok −13,3 dB, koherentní zisk 1,00 a nejvyšší čáru −3,79 dB.
-Kód má 473 řádků (Rust 553).
+Kód má 512 řádků (Rust 553).
 
 **Horší – pád programu kvůli délce čáry.** Spektrum okna se kreslí z
 16 385 bodů. DVUI čísluje vrcholy jednoho tahu (`dvui.Path.stroke`)
