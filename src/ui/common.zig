@@ -57,6 +57,9 @@ pub const SliderOptions = struct {
     suffix: []const u8 = "",
     /// Počet desetinných míst v políčku; když chybí, odvodí se z kroku.
     decimals: ?usize = null,
+    /// Vynechat nuly na konci desetinné části („300“ místo „300.00“,
+    /// „50.5“ místo „50.50“), jako u frekvencí v Rust verzi.
+    trim_zeros: bool = false,
     id_extra: usize = 0,
 };
 
@@ -118,7 +121,8 @@ fn numberEntry(value: *f64, options: SliderOptions) bool {
     const focused = dvui.focusedWidgetId() == entry.data().id;
     if (!focused) {
         var buffer: [32]u8 = undefined;
-        entry.textSet(formatNumber(&buffer, value.*, displayDecimals(options)), false);
+        const formatted = formatNumber(&buffer, value.*, displayDecimals(options));
+        entry.textSet(if (options.trim_zeros) trimZeros(formatted) else formatted, false);
     }
     entry.processEvents();
     entry.filterIn("0123456789+-.e");
@@ -142,6 +146,13 @@ fn displayDecimals(options: SliderOptions) usize {
     if (options.decimals) |decimals| return decimals;
     if (options.step <= 0 or options.step >= 1) return if (options.step >= 1) 0 else 2;
     return @intFromFloat(@ceil(-@log10(options.step) - 1e-9));
+}
+
+/// Odstraní nuly na konci desetinné části a případně i desetinnou tečku.
+fn trimZeros(formatted: []const u8) []const u8 {
+    if (std.mem.findScalar(u8, formatted, '.') == null) return formatted;
+    const without_zeros = std.mem.trimEnd(u8, formatted, "0");
+    return std.mem.trimEnd(u8, without_zeros, ".");
 }
 
 /// Číslo s pevným počtem desetinných míst; „-0“ se vypíše jako „0“.
@@ -279,7 +290,7 @@ pub fn componentControls(
     }
 
     const step = if (frequency_step > 0) frequency_step else 0.01;
-    _ = slider(@src(), "frekvence", &component.frequency_hz, .{ .min = 0, .max = max_frequency_hz, .step = step, .suffix = "Hz" });
+    _ = slider(@src(), "frekvence", &component.frequency_hz, .{ .min = 0, .max = max_frequency_hz, .step = step, .suffix = "Hz", .trim_zeros = true });
     _ = slider(@src(), "amplituda", &component.amplitude, .{ .min = 0, .max = max_component_amplitude, .step = 0.01 });
     _ = slider(@src(), "fáze", &component.phase_deg, .{ .min = -180, .max = 180, .step = 1, .suffix = "°" });
     return remove_clicked;
