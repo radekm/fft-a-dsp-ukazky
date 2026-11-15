@@ -129,7 +129,7 @@ Rust verze je předloha: stejné záložky, ovládání, výchozí hodnoty a č�
       písmem Inter.
 - [x] Kostra: `build.zig`, `build.zig.zon`, okno se záložkami, motiv
       s písmem Inter, logování, kontroly `zig fmt` a `zig build test`.
-- [ ] DSP: `complex`, `signal`, `fft`, `spectrum`, `window`, `filter`,
+- [x] DSP: `complex`, `signal`, `fft`, `spectrum`, `window`, `filter`,
       `sampling` včetně všech testů z Rust verze.
 - [ ] Widget grafu: osy s popisky a mřížkou, křivky, body, svislé čáry,
       čárkovaný styl, legenda, výchozí rozsah os, přibližování a posun,

@@ -17,6 +17,11 @@ během přepisu.
 | Pozadí okna | horší (drobnost) | DVUI okno nevyplní, bez vlastního pozadí je černé |
 | Logování | horší | `std.log` nemá pojmenovaná pole jako `tracing` |
 | Oddělení DSP od UI | lepší | DSP je samostatný modul bez přístupu k DVUI, hlídá to překladač |
+| DSP – délka kódu | srovnatelná | asi 1 570 řádků v Zigu proti 1 580 v Rustu včetně testů |
+| DSP – vzorce s komplexními čísly | horší | Zig nemá přetěžování operátorů: `a.add(w.mul(b))` místo `a + w * b` |
+| DSP – správa paměti | horší i lepší | explicitní alokátor a `defer free` všude; testy ale samy hlídají úniky |
+| DSP – chybné vstupy | lepší | chyba v návratovém typu (`error.LengthNotPowerOfTwo`) místo paniky |
+| Převody čísel | horší | `@floatFromInt` u každého převodu `usize` → `f64` |
 | Stabilita jazyka | horší | API standardní knihovny a build systému se mezi verzemi Zigu mění |
 
 ## Sestavení a závislosti
@@ -113,3 +118,63 @@ a návody na internetu bývají pro starší verze. Už při psaní kostry:
 
 Pomáhá, že překladač hlásí zrušené funkce srozumitelnou chybou a že zdrojáky
 standardní knihovny se dobře čtou.
+
+## DSP (`src/dsp/`)
+
+Převedeno všech sedm modulů a všech 38 testů z Rust verze. Všechny testy
+prošly napoprvé se stejnými tolerancemi, čísla tedy sedí. Kód má
+v obou jazycích skoro stejnou délku (Zig 1 566 řádků, Rust 1 584 včetně
+testů).
+
+**Horší – komplexní čísla bez operátorů.** Zig nemá přetěžování operátorů.
+Motýlek FFT, který v Rustu vypadá jako vzorec z učebnice
+(`data[top] = a + b; b = w * data[bottom]`), se v Zigu píše voláním metod
+(`a.add(b)`, `w.mul(data[bottom])`). U delších výrazů (frekvenční
+charakteristika, DFT) je to hůř čitelné, což je u učební pomůcky citelné.
+Zig to dělá záměrně: v kódu nesmí být skrytá volání funkcí.
+
+**Horší i lepší – správa paměti.** Rust vrací `Vec<f64>` a o uvolnění se
+nestará. V Zigu dostává každá alokující funkce alokátor a volající musí
+výsledek uvolnit (`defer allocator.free(...)`). Testy jsou kvůli tomu
+o něco delší: kde Rust napíše `fft(&real_to_complex(&samples))` na jednom
+řádku, Zig potřebuje mezivýsledek s vlastním `defer`. Na druhou stranu
+`std.testing.allocator` po každém testu ověří, že se všechno uvolnilo.
+Únik paměti tak test rovnou shodí. V Rustu se úniky v běžném kódu nestávají,
+takže tam podobnou kontrolu ani není potřeba dělat.
+
+Výhodou explicitního alokátoru je, že se dá zvolit, odkud paměť přijde.
+Uživatelské rozhraní tak bude moci počítat do arény, kterou na konci snímku
+celou zahodí, místo aby uvolňovalo každé pole zvlášť.
+
+**Lepší – chybné vstupy jako chyby.** Rust verze při délce FFT, která není
+mocninou dvou, nebo při sudé délce FIR filtru volala `assert!` (panika).
+Test na to používal `#[should_panic]`. V Zigu se panika testovat nedá
+(ukončí celý testovací proces), proto `fft` a `designFir` vracejí chybu
+(`error.LengthNotPowerOfTwo`, `error.FirLengthNotOdd`) a test ji ověří přes
+`expectError`. Je to lepší i obecně: z typu funkce je vidět, že může selhat,
+a volající to musí ošetřit. Přibyl tím jeden test (sudá délka FIR).
+Chyby, které jsou jen chybou programátora (různé délky signálu a okna),
+zůstaly jako `std.debug.assert`.
+
+**Horší – převody čísel.** Každý převod indexu na `f64` se v Zigu píše
+`@floatFromInt(index)` a navíc potřebuje znát cílový typ. Proto má každý
+modul pomocnou funkci `toF64`. Rust má kratší `index as f64`. Podobně
+`1 / @sqrt(2.0)` neprojde překladem (dělení celého čísla s desetinným za
+překladu je „nejednoznačné“), je třeba psát `1.0 / @sqrt(2.0)`.
+
+**Lepší – drobnosti v syntaxi.**
+- Cyklus přes několik polí najednou je přímo v jazyce:
+  `for (output, samples, coefficients) |*result, sample, weight|`.
+  V Rustu to vyžaduje `iter().zip()`, u tří polí dvakrát.
+- Rozbalení pole do proměnných: `const b0, const b1, const b2 = biquad.b;`.
+- Násobení s přetečením má vlastní operátor `*%` (generátor šumu), Rust volá
+  `wrapping_mul`.
+- `@memset`, `@memcpy`, `@abs`, `@sin`, `@log10` jsou vestavěné a fungují
+  i pro vektory.
+
+**Srovnatelné.** Výčtové typy (`enum`) a `switch` fungují jako `enum`
+a `match` v Rustu, včetně kontroly, že jsou pokryté všechny možnosti.
+Struktury s metodami (`Complex`, `SampledSignal.sampleTime`) jsou si také
+podobné. Návrat mezivýsledku místo kopírování (horní propust se z dolní
+udělá na místě) je v Zigu přirozenější, protože pole není „přesunuté“
+a dá se dál upravovat.
