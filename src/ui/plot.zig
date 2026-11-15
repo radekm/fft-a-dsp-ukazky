@@ -498,7 +498,9 @@ pub const Plot = struct {
                 if (!std.math.isFinite(point.x) or !std.math.isFinite(point.y)) continue;
                 const screen = transform.toScreen(point);
                 const distance = std.math.hypot(screen.x - mouse.x, screen.y - mouse.y);
-                if (distance < nearest_distance) {
+                // Při stejné vzdálenosti vyhraje později přidaná křivka, protože
+                // je nakreslená navrchu (např. vzorky přes spojitý signál).
+                if (distance <= nearest_distance) {
                     nearest_distance = distance;
                     nearest = .{ .series = series, .point = point };
                 }
