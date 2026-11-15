@@ -272,6 +272,25 @@ motiv `adwaita_dark`, na přání autora ale nakonec používá světlý
 na bílém pozadí dobře vidět. Změna motivu v DVUI je jeden řádek, barvy
 grafu (mřížka, popisky, rámečky) se berou z motivu samy.
 
+Čísla na osách (oprava po nasazení webové verze): u sinusovky 0 Hz s fází
+180° je signál 0,11 · sin(π), v počítači ale vyjde asi 1,3·10⁻¹⁷.
+Automatický rozsah se natáhl na tento zaokrouhlovací šum, čísla osy y měla
+19 desetinných míst a přetekla do levého panelu. Oprava má tři části:
+
+- Automatický rozsah bere data s rozpětím pod 10⁻¹² nebo pod tisícinou
+  velikosti hodnot jako konstantu a ukáže vodorovnou čáru (osa −1,1 až 1,1).
+  Stejná mez platí pro přiblížení kolečkem (dřív miliardtina), takže čísla
+  na osách mají nejvýš asi 6 znaků („51.13“, „0.9184“).
+- Velmi malé (pod 10⁻⁴) a velké (od 10⁶) hodnoty se na osách
+  i v popisku u kurzoru píšou vědecky: `2e-5`, `1.5e6`, `1.347e-17`.
+  Rozhoduje velikost hodnot, ne kroku: u malého rozsahu daleko od nuly by
+  vědecký zápis dal samá stejná čísla („5.112e1“).
+- Čísla osy y se ořezávají na svůj pás vedle grafu, aby nikdy nezasáhla
+  do panelu.
+
+Společný násobitel u osy (jako „×10⁻⁵“ v matplotlib) by se četl lépe, ale
+autor dal přednost jednoduššímu kódu.
+
 ## Záložka „Signály a spektrum“ (`src/ui/spectrum.zig`, `src/ui/common.zig`)
 
 Rozsahem kódu je záložka podobná Rust verzi (spectrum.zig 426 řádků,
@@ -480,7 +499,7 @@ chování (v řeči Zigu „safety-checked Illegal Behavior“) hrozí jen u:
 | Funkce | Kdy je to chyba | Stav v našem kódu |
 |---|---|---|
 | `@intCast` | hodnota se nevejde do cílového typu | jen indexy z rozbalovacích seznamů, `@ctz` mocniny dvou a doba výpočtu v ns – vždy v rozsahu |
-| `@intFromFloat` | NaN nebo hodnota mimo rozsah (v 0.17 je zastaralé, odpovídá `@trunc`) | počet desetinných míst (omezen na 0–20), počet dílků (1–1000), `k` filtru (1–200), počet vzorků (fs 1–200) |
+| `@intFromFloat` | NaN nebo hodnota mimo rozsah (v 0.17 je zastaralé, odpovídá `@trunc`) | počet desetinných míst (omezen na 0–20) a číslic mantisy (0–6), počet dílků (1–1000), `k` filtru (1–200), počet vzorků (fs 1–200) |
 | `@round`, `@floor`, `@ceil`, `@trunc` | totéž, **pokud je odvozený typ výsledku celé číslo** – v 0.17 tak tyto funkce převádějí na celé číslo | všude s výsledkem `f64`, převod vždy výslovně přes `@intFromFloat` |
 | `@mod` | nulový dělitel | čárkování čáry – nově ošetřený nulový vzor |
 | `@memcpy` | různé délky nebo překryv | `zeroPad` – stejné délky, nově alokovaná paměť |
