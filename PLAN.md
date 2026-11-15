@@ -135,7 +135,7 @@ Rust verze je předloha: stejné záložky, ovládání, výchozí hodnoty a č�
       čárkovaný styl, legenda, výchozí rozsah os, přibližování a posun,
       propojené osy více grafů, popisek se souřadnicemi při najetí myší.
 - [x] Záložka Signály a spektrum.
-- [ ] Záložka Okna a prosakování.
+- [x] Záložka Okna a prosakování.
 - [ ] Záložka Vzorkování a aliasing.
 - [ ] Záložka Filtry.
 - [ ] Porovnání s Rust verzí: stejná čísla a srovnatelné snímky všech záložek.

@@ -103,7 +103,12 @@ pub const Options = struct {
     /// Výška celého grafu včetně popisků os v logických pixelech.
     height: f32,
     x_label: []const u8,
+    /// Popisek svislé osy; prázdný = bez popisku (místo pro něj zůstane,
+    /// aby byly grafy pod sebou zarovnané).
     y_label: []const u8,
+    /// Názvy os v popisku u kurzoru, pokud se mají lišit od popisků os.
+    hover_x_label: ?[]const u8 = null,
+    hover_y_label: ?[]const u8 = null,
     /// Zobrazit legendu s názvy křivek v pravém horním rohu.
     legend: bool = false,
     /// Šířka sloupce s čísly na svislé ose. Stejná šířka u grafů pod sebou
@@ -139,6 +144,8 @@ const auto_margin = 0.05;
 const hover_radius: f32 = 12;
 /// Nejdelší pauza mezi dvěma kliknutími, která se ještě počítá jako dvojklik.
 const double_click_ns: i128 = 400 * std.time.ns_per_ms;
+/// Nejvíc bodů čáry v jednom volání `dvui.Path.stroke` (viz `drawSeries`).
+const max_points_per_stroke = 2000;
 /// Přiblížení na jeden pixel otočení kolečka (s Ctrl).
 const zoom_per_wheel_pixel = 0.005;
 
@@ -147,6 +154,8 @@ const SeriesKind = enum {
     line,
     /// Body se svislou čárou („stonkem“) od nuly.
     stems,
+    /// Samotné body bez čar.
+    markers,
     /// Svislá čára přes celý graf.
     vertical_line,
 };
@@ -194,6 +203,11 @@ pub const Plot = struct {
     /// Body se svislými čarami od nuly (jako „stonky“ v egui_plot).
     pub fn stems(self: *Plot, name: []const u8, points: []const Point, style: Style) void {
         self.add(.{ .name = name, .kind = .stems, .points = points, .color = self.colorFor(style), .style = style });
+    }
+
+    /// Samotné body (puntíky) bez čar.
+    pub fn markers(self: *Plot, name: []const u8, points: []const Point, style: Style) void {
+        self.add(.{ .name = name, .kind = .markers, .points = points, .color = self.colorFor(style), .style = style });
     }
 
     /// Svislá čára přes celou výšku grafu na souřadnici `x`.
@@ -279,7 +293,7 @@ pub const Plot = struct {
         for (self.series.items) |series| {
             switch (series.kind) {
                 .vertical_line => x_data = x_data.including(series.x),
-                .line, .stems => for (series.points) |point| {
+                .line, .stems, .markers => for (series.points) |point| {
                     if (!std.math.isFinite(point.x) or !std.math.isFinite(point.y)) continue;
                     x_data = x_data.including(point.x);
                     y_data = y_data.including(point.y);
@@ -488,6 +502,8 @@ pub const Plot = struct {
         strokeLine(.{ .x = transform.rect.x, .y = target.y }, .{ .x = transform.rect.x + transform.rect.w, .y = target.y }, 1, crosshair_color);
 
         const arena = dvui.currentWindow().arena();
+        const x_name = self.options.hover_x_label orelse self.options.x_label;
+        const y_name = self.options.hover_y_label orelse self.options.y_label;
         var x_buffer: [32]u8 = undefined;
         var y_buffer: [32]u8 = undefined;
         const text = blk: {
@@ -495,17 +511,17 @@ pub const Plot = struct {
                 fillCircle(target, (found.series.style.radius + 2) * scale, theme.text);
                 break :blk std.fmt.allocPrint(arena, "{s}\n{s}: {s}\n{s}: {s}", .{
                     found.series.name,
-                    self.options.x_label,
+                    x_name,
                     formatCoordinate(&x_buffer, found.point.x),
-                    self.options.y_label,
+                    y_name,
                     formatCoordinate(&y_buffer, found.point.y),
                 }) catch return;
             }
             const position = transform.toData(mouse);
             break :blk std.fmt.allocPrint(arena, "{s}: {s}\n{s}: {s}", .{
-                self.options.x_label,
+                x_name,
                 formatCoordinate(&x_buffer, position.x),
-                self.options.y_label,
+                y_name,
                 formatCoordinate(&y_buffer, position.y),
             }) catch return;
         };
@@ -540,6 +556,15 @@ pub const Plot = struct {
         }
     }
 };
+
+/// Pole bodů pro graf v aréně snímku (DVUI ho na konci snímku zahodí).
+/// Při nedostatku paměti vrátí null a graf se v tomto snímku nenakreslí.
+pub fn allocPoints(count: usize) ?[]Point {
+    return dvui.currentWindow().arena().alloc(Point, count) catch |err| {
+        log.warn("cannot allocate plot points count={d} error={s}", .{ count, @errorName(err) });
+        return null;
+    };
+}
 
 /// Automatický rozsah z rozsahu dat: přidá okraj a ošetří prázdná data
 /// a data s jedinou hodnotou.
@@ -585,11 +610,18 @@ fn drawSeries(transform: Transform, series: Series, scale: f32) void {
                 screen_points[count] = transform.toScreen(point);
                 count += 1;
             }
-            if (count >= 2) {
-                dvui.Path.stroke(.{ .points = screen_points[0..count] }, .{
+            // DVUI čísluje vrcholy jednoho tahu typem u16 (nejvýš 65 535
+            // vrcholů, na bod čáry jich padne několik). Dlouhou čáru proto
+            // kreslíme po úsecích; sousední úseky sdílejí jeden bod, aby
+            // čára nebyla přerušená.
+            var start: usize = 0;
+            while (start + 1 < count) {
+                const end = @min(start + max_points_per_stroke, count);
+                dvui.Path.stroke(.{ .points = screen_points[start..end] }, .{
                     .thickness = thickness,
                     .color = .{ .color = series.color },
                 });
+                start = end - 1;
             }
         },
         .stems => {
@@ -599,6 +631,12 @@ fn drawSeries(transform: Transform, series: Series, scale: f32) void {
                 const top = transform.toScreen(point);
                 strokeLine(.{ .x = top.x, .y = zero_y }, top, thickness * 0.7, series.color);
                 fillCircle(top, series.style.radius * scale, series.color);
+            }
+        },
+        .markers => {
+            for (series.points) |point| {
+                if (!std.math.isFinite(point.x) or !std.math.isFinite(point.y)) continue;
+                fillCircle(transform.toScreen(point), series.style.radius * scale, series.color);
             }
         },
         .vertical_line => {
@@ -718,6 +756,7 @@ fn drawAxisLabels(options: Options, content: PhysicalRect, data_rect: PhysicalRe
         .y = content.y + content.h - line_height,
     }, scale, color);
 
+    if (options.y_label.len == 0) return;
     // Text otočený o 270° po směru hodinových ručiček se čte zdola nahoru.
     const y_width = font.textSize(options.y_label).w * scale;
     const position: PhysicalPoint = .{

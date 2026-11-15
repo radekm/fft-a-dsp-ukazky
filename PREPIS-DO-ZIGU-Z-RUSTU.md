@@ -25,6 +25,7 @@ během přepisu.
 | Grafy | horší | egui_plot dal grafy zadarmo, v Zigu vlastní widget (asi 780 řádků) |
 | Ovládací prvky | horší | posuvník DVUI umí jen zlomek 0–1; jednotky, log. stupnici a políčko s číslem jsme doplnili sami |
 | Rozvržení panelu | srovnatelné | levý panel, posuvná oblast a grafy se skládají z boxů podobně jako v egui |
+| Dlouhé čáry v DVUI | horší | index vrcholu `u16`: čára s 16 000 body shodila program, kreslí se po úsecích |
 | Stabilita jazyka | horší | API standardní knihovny a build systému se mezi verzemi Zigu mění |
 
 ## Sestavení a závislosti
@@ -284,3 +285,34 @@ nepotřebuje alokaci a dá se kopírovat jako hodnota.
 - Ostré špičky spektra se při napojování úseků čáry způsobem `.strip`
   zkracovaly (špička 1,0 vypadala jako 0,75). Výchozí `.miter` je kreslí
   správně.
+
+## Záložka „Okna a prosakování“ (`src/ui/windows.zig`)
+
+Čísla souhlasí s Rust verzí do posledního zobrazeného místa. Pro obdélníkové
+okno, N = 64 a frekvenci 10,5 binu ukazují obě verze první nulu ±1,00 binu,
+postranní lalok −13,3 dB, koherentní zisk 1,00 a nejvyšší čáru −3,79 dB.
+Kód má 473 řádků (Rust 553).
+
+**Horší – pád programu kvůli délce čáry.** Spektrum okna se kreslí z
+16 385 bodů. DVUI čísluje vrcholy jednoho tahu (`dvui.Path.stroke`)
+typem `u16`, takže víc než 65 535 vrcholů (na bod čáry jich připadá
+několik) skončí přetečením celého čísla. V režimu Debug to Zig zachytí
+a program spadne s hlášením „integer overflow“ a přesným místem. Bez
+kontrol (ReleaseFast) by šlo o nedefinované chování. egui se s tím
+nepotýkalo. Typ indexu jde v DVUI změnit volbou `vertex-index`, ale volby
+DVUI podle pravidel neměníme. Widget grafu proto kreslí dlouhé čáry po
+úsecích nejvýš 2 000 bodů. Pozitivní je, že bezpečnostní kontroly Zigu
+chybu ukázaly okamžitě a přesně.
+
+**Horší – zakázané ovládací prvky.** V Rust verzi byly posuvníky slabé
+sinusovky při jejím vypnutí zašedlé (`add_enabled_ui`). DVUI zakázaný stav
+nemá, posuvníky se proto při vypnutí slabé sinusovky skryjí.
+
+**Srovnatelné.** Tabulku vlastností okna (v egui `Grid`) nahradily řádky
+s popiskem pevné šířky. Rozbalovací seznamy s délkou signálu a násobkem
+doplnění nulami mají popisky vytvořené už za překladu
+(`std.fmt.comptimePrint`), takže nepotřebují žádnou alokaci.
+
+**Lepší – sdílené pomocné funkce grafu.** Widget grafu dostal body bez čar
+(`markers`) a jiný název osy v popisku u kurzoru (`hover_x_label`). Obojí
+egui_plot uměl, u vlastního widgetu se to doplní pár řádky.

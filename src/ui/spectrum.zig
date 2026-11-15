@@ -206,7 +206,7 @@ pub const SpectrumTab = struct {
     }
 
     fn showAmplitudePlot(self: *SpectrumTab, computed: *const Computed, height: f32) void {
-        const points = arenaPoints(computed.lines.len) orelse return;
+        const points = plot.allocPoints(computed.lines.len) orelse return;
         for (points, computed.lines) |*point, line| {
             point.* = .{
                 .x = frequencyCoordinate(line, self.frequency_axis),
@@ -238,7 +238,7 @@ pub const SpectrumTab = struct {
     }
 
     fn showPhasePlot(self: *SpectrumTab, computed: *const Computed, height: f32) void {
-        const points = arenaPoints(computed.lines.len) orelse return;
+        const points = plot.allocPoints(computed.lines.len) orelse return;
         for (points, computed.lines) |*point, line| {
             point.* = .{ .x = frequencyCoordinate(line, self.frequency_axis), .y = line.phase_deg };
         }
@@ -402,21 +402,13 @@ fn showSignalControls(settings: *Settings) void {
 
 fn showTimePlot(computed: *const Computed, height: f32) void {
     const sample_rate_hz = computed.settings.sample_rate_hz;
-    const points = arenaPoints(computed.samples.len) orelse return;
+    const points = plot.allocPoints(computed.samples.len) orelse return;
     for (points, computed.samples, 0..) |*point, sample, index| {
         point.* = .{ .x = 1000 * @as(f64, @floatFromInt(index)) / sample_rate_hz, .y = sample };
     }
     var time_plot = plot.Plot.init(@src(), .{ .height = height, .x_label = "čas [ms]", .y_label = "hodnota" });
     time_plot.line("signál", points, .{});
     time_plot.show();
-}
-
-/// Pole bodů pro graf v aréně snímku (DVUI ho na konci snímku zahodí).
-fn arenaPoints(count: usize) ?[]plot.Point {
-    return dvui.currentWindow().arena().alloc(plot.Point, count) catch |err| {
-        log.warn("cannot allocate plot points count={d} error={s}", .{ count, @errorName(err) });
-        return null;
-    };
 }
 
 fn frequencyCoordinate(line: SpectrumLine, frequency_axis: FrequencyAxis) f64 {
