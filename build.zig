@@ -42,6 +42,14 @@ pub fn build(b: *std.Build) void {
     exe_mod.addImport("dsp", dsp_mod);
     exe_mod.addOptions("build_options", build_options);
 
+    // DVUI na macOS přidává do backendu SDL3 soubor macos_monitor.m (AppKit,
+    // Objective-C), ale samo k němu nepřilinkuje potřebné knihovny: spoléhá na
+    // SDL3 přeložené ze zdrojů. Se systémovým SDL3 je tedy přidáme sami.
+    if (target.result.os.tag == .macos) {
+        exe_mod.linkFramework("AppKit", .{});
+        exe_mod.linkSystemLibrary("objc", .{});
+    }
+
     const exe = b.addExecutable(.{
         .name = "fft-dsp-demos",
         .root_module = exe_mod,

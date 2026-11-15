@@ -42,6 +42,9 @@ předloha. Pravidla níže platí pro verzi v Zigu v kořeni repozitáře.
 - Systémová knihovna SDL3, linkovaná dynamicky. `build.zig` zapíná systémové
   SDL3 jako výchozí (odpovídá `zig build -fsys=sdl3`). SDL3 se nepřekládá ze
   zdrojů.
+- Jen na macOS: systémový framework AppKit a knihovna `libobjc`. Potřebuje
+  je soubor `macos_monitor.m` z DVUI, který je sám nepřilinkuje (spoléhá na
+  SDL3 přeložené ze zdrojů).
 - Písmo Inter v `src/fonts/` (licence SIL OFL 1.1, soubor `src/fonts/OFL.txt`).
 - Cokoli jiného (další balíčky Zigu, knihovny v C, další systémové knihovny)
   je zakázané, dokud to autor výslovně nepovolí. Zakázané je i měnit volby

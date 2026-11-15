@@ -77,6 +77,13 @@ nepotřebuje žádnou systémovou knihovnu kromě ovladače OpenGL.
   i když je program nepoužívá. Například balíček SDL2 se stahuje, i když
   linkujeme SDL3. Líné (lazy) závislosti se stáhnou, až když jsou opravdu
   potřeba.
+- Na macOS se program se systémovým SDL3 nepřeložil: chyběly symboly
+  `_OBJC_CLASS_$_NSEvent` a `_objc_msgSend`. DVUI na macOS přidává do backendu
+  SDL3 vlastní soubor v Objective-C (`macos_monitor.m`, používá AppKit), ale
+  potřebné knihovny k němu nepřilinkuje – spoléhá na to, že je přinese SDL3
+  přeložené ze zdrojů. Sdílená knihovna `libSDL3.dylib` své závislosti do
+  programu nepředá. `build.zig` proto na macOS přidává framework AppKit
+  a `libobjc`. Je to další drobná chyba DVUI, na Linuxu se neprojeví.
 - Některé volitelné části DVUI se dají vypnout volbou při načtení závislosti,
   např. `.@"tree-sitter" = false` (zvýrazňování syntaxe v editoru kódu).
   Ubude tím několik stahovaných balíčků.
