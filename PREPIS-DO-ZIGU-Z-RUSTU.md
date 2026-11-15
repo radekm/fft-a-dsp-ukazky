@@ -22,6 +22,7 @@ během přepisu.
 | DSP – správa paměti | horší i lepší | explicitní alokátor a `defer free` všude; testy ale samy hlídají úniky |
 | DSP – chybné vstupy | lepší | chyba v návratovém typu (`error.LengthNotPowerOfTwo`) místo paniky |
 | Převody čísel | horší | `@floatFromInt` u každého převodu `usize` → `f64` |
+| Grafy | horší | egui_plot dal grafy zadarmo, v Zigu vlastní widget (asi 690 řádků) |
 | Stabilita jazyka | horší | API standardní knihovny a build systému se mezi verzemi Zigu mění |
 
 ## Sestavení a závislosti
@@ -178,3 +179,49 @@ Struktury s metodami (`Complex`, `SampledSignal.sampleTime`) jsou si také
 podobné. Návrat mezivýsledku místo kopírování (horní propust se z dolní
 udělá na místě) je v Zigu přirozenější, protože pole není „přesunuté“
 a dá se dál upravovat.
+
+## Grafy (`src/ui/plot.zig`)
+
+**Horší.** V Rust verzi kreslil grafy hotový crate `egui_plot`. Každý graf
+se nastavil několika řádky (`Plot::new(...).legend(...).link_axis(...)`)
+a přibližování, posun, legenda, mřížka i dílky os fungovaly samy. Graf
+v DVUI (`dvui.plot`) umí jen osy, čáry, sloupce a jednoduchý popisek;
+chybí přibližování a posun, legenda, propojené osy a čárkované čáry.
+Proto vznikl vlastní widget: asi 690 řádků v jednom souboru.
+
+Co widget umí (stejně jako grafy v Rust verzi):
+- lomené čáry, body se stonky, svislé (i čárkované) čáry, barvy a tloušťky,
+- osy s „hezkými“ dílky (1, 2, 5 × 10ⁿ), mřížku a zvýrazněné osy v nule,
+- popisky os, pevnou šířku svislé osy (grafy pod sebou jsou zarovnané),
+- legendu v pravém horním rohu,
+- automatický rozsah s okrajem 5 %, `include_y` a výchozí rozsah,
+- tažení myší = posun, kolečko = posun, Ctrl + kolečko = přiblížení kolem
+  kurzoru, dvojklik = automatický rozsah,
+- propojenou osu x více grafů (`LinkedAxis`),
+- popisek se souřadnicemi a názvem nejbližší křivky a zaměřovací kříž.
+
+Co oproti egui_plot chybí: výběr oblasti pro přiblížení pravým tlačítkem
+a skrývání křivek kliknutím do legendy. Rust verze ani učebnice je
+nepoužívaly.
+
+Lepší je, že widget je celý náš a dá se upravit. Například popisek
+u kurzoru musela Rust verze skládat přes `label_formatter`, protože výchozí
+popisek egui_plot souřadnice neukazoval. Tady je to přímo součást widgetu.
+Kreslení v DVUI je přímočaré: `dvui.Path.stroke` pro čáry, `fillConvex`
+pro kruhy, `dvui.renderText` pro text (umí i otočení pro svislý popisek
+osy), `dvui.clip` pro ořez na kreslicí plochu.
+
+DVUI je v okamžitém režimu jako egui, takže widget funguje podobně:
+křivky se během snímku jen posbírají a při `show()` se spočítá rozsah,
+obslouží myš a vše se nakreslí. Stav mezi snímky (rozsah os, čas
+posledního kliknutí pro dvojklik) se ukládá přes `dvui.dataSet` pod ID
+widgetu. Dvojklik DVUI jako událost nehlásí, rozpozná se podle času mezi
+dvěma stisky.
+
+Pomocné alokace (body v pixelech, texty popisků) jdou do arény snímku
+(`dvui.currentWindow().arena()`), kterou DVUI na konci snímku celou zahodí.
+Uvolňovat je tedy není potřeba, podobně jako v Rustu, kde se `Vec` uvolní
+sám.
+
+Tmavý motiv: barvy grafů v Rust verzi byly zvolené pro tmavé pozadí egui,
+proto i verze v Zigu používá tmavý motiv `adwaita_dark`.

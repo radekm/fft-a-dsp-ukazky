@@ -131,7 +131,7 @@ Rust verze je předloha: stejné záložky, ovládání, výchozí hodnoty a č�
       s písmem Inter, logování, kontroly `zig fmt` a `zig build test`.
 - [x] DSP: `complex`, `signal`, `fft`, `spectrum`, `window`, `filter`,
       `sampling` včetně všech testů z Rust verze.
-- [ ] Widget grafu: osy s popisky a mřížkou, křivky, body, svislé čáry,
+- [x] Widget grafu: osy s popisky a mřížkou, křivky, body, svislé čáry,
       čárkovaný styl, legenda, výchozí rozsah os, přibližování a posun,
       propojené osy více grafů, popisek se souřadnicemi při najetí myší.
 - [ ] Záložka Signály a spektrum.

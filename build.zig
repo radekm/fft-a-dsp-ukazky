@@ -54,8 +54,10 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Run the program");
     run_step.dependOn(&run_cmd.step);
 
-    // Testy DSP běží bez DVUI a bez okna.
+    // Testy DSP běží bez DVUI a bez okna, testy UI potřebují přeložit DVUI.
     const dsp_tests = b.addTest(.{ .root_module = dsp_mod });
+    const ui_tests = b.addTest(.{ .root_module = exe_mod });
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&b.addRunArtifact(dsp_tests).step);
+    test_step.dependOn(&b.addRunArtifact(ui_tests).step);
 }

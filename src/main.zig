@@ -124,9 +124,9 @@ const inter_fonts = [_]dvui.Font.Source{
 /// Velikost běžného textu v logických pixelech.
 const body_font_size = 14;
 
-/// Světlý motiv DVUI s písmem Inter.
+/// Tmavý motiv DVUI (jako v Rust verzi) s písmem Inter.
 fn theme() dvui.Theme {
-    var result = dvui.Theme.builtin.adwaita_light;
+    var result = dvui.Theme.builtin.adwaita_dark;
     result.embedded_fonts = &inter_fonts;
     result.font_body = .find(.{ .family = "Inter", .size = body_font_size });
     result.font_heading = .find(.{ .family = "Inter", .weight = .bold, .size = body_font_size });
@@ -150,4 +150,9 @@ fn deinit(win: *dvui.Window) void {
 fn frame() !dvui.App.Result {
     try app.frame();
     return .ok;
+}
+
+test {
+    // Testy uživatelského rozhraní, které nepotřebují okno.
+    _ = @import("ui/plot.zig");
 }
