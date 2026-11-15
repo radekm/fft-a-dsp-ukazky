@@ -49,7 +49,9 @@ const Settings = struct {
     noise_amplitude: f64,
     noise_seed: u64,
     sample_rate_hz: f64,
-    fft_exponent: u6,
+    /// Typ podle šířky `usize` (64 bitů na desktopu, 32 ve WebAssembly),
+    /// aby šel přímo použít jako posun v `1 << fft_exponent`.
+    fft_exponent: std.math.Log2Int(usize),
     algorithm: Algorithm,
 
     fn activeComponents(self: *Settings) []Component {
