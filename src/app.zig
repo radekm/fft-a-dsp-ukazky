@@ -5,15 +5,23 @@ const dvui = @import("dvui");
 
 const ui = @import("ui/ui.zig");
 const Tab = ui.Tab;
+const SpectrumTab = @import("ui/spectrum.zig").SpectrumTab;
 
 const log = std.log.scoped(.app);
 
 /// Stav aplikace: vybraná záložka a stav jednotlivých ukázek.
 pub const App = struct {
     selected_tab: Tab = .spectrum,
+    spectrum: SpectrumTab = .{},
 
-    /// Nakreslí jeden snímek celé aplikace.
-    pub fn frame(self: *App) !void {
+    /// Uvolní výsledky výpočtů všech záložek.
+    pub fn deinit(self: *App, allocator: std.mem.Allocator) void {
+        self.spectrum.deinit(allocator);
+    }
+
+    /// Nakreslí jeden snímek celé aplikace. Výsledky výpočtů, které přežívají
+    /// mezi snímky, alokuje přes `allocator`.
+    pub fn frame(self: *App, allocator: std.mem.Allocator) !void {
         // Pozadí okna: DVUI ho samo nekreslí, bez něj by bylo černé.
         var background = dvui.box(@src(), .{}, .{
             .expand = .both,
@@ -32,7 +40,8 @@ pub const App = struct {
         defer content.deinit();
 
         switch (self.selected_tab) {
-            .spectrum, .windows, .sampling, .filters => {
+            .spectrum => try self.spectrum.show(allocator),
+            .windows, .sampling, .filters => {
                 dvui.label(@src(), "Záložka „{s}“ se teprve přepisuje.", .{self.selected_tab.title()}, .{});
             },
         }

@@ -122,7 +122,7 @@ const inter_fonts = [_]dvui.Font.Source{
 };
 
 /// Velikost běžného textu v logických pixelech.
-const body_font_size = 14;
+const body_font_size = 13;
 
 /// Tmavý motiv DVUI (jako v Rust verzi) s písmem Inter.
 fn theme() dvui.Theme {
@@ -130,7 +130,8 @@ fn theme() dvui.Theme {
     result.embedded_fonts = &inter_fonts;
     result.font_body = .find(.{ .family = "Inter", .size = body_font_size });
     result.font_heading = .find(.{ .family = "Inter", .weight = .bold, .size = body_font_size });
-    result.font_title = .find(.{ .family = "Inter", .weight = .bold, .size = body_font_size + 4 });
+    // Nadpisy oddílů jsou větší, ale ne tučné (jako `ui.heading` v egui).
+    result.font_title = .find(.{ .family = "Inter", .size = body_font_size + 4 });
     return result;
 }
 
@@ -142,13 +143,13 @@ fn init(win: *dvui.Window) !void {
 
 /// Spustí se při zavírání okna.
 fn deinit(win: *dvui.Window) void {
-    _ = win;
+    app.deinit(win.gpa);
     log.info("application closed", .{});
 }
 
 /// Nakreslí jeden snímek.
 fn frame() !dvui.App.Result {
-    try app.frame();
+    try app.frame(dvui.currentWindow().gpa);
     return .ok;
 }
 

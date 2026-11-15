@@ -134,7 +134,7 @@ Rust verze je předloha: stejné záložky, ovládání, výchozí hodnoty a č�
 - [x] Widget grafu: osy s popisky a mřížkou, křivky, body, svislé čáry,
       čárkovaný styl, legenda, výchozí rozsah os, přibližování a posun,
       propojené osy více grafů, popisek se souřadnicemi při najetí myší.
-- [ ] Záložka Signály a spektrum.
+- [x] Záložka Signály a spektrum.
 - [ ] Záložka Okna a prosakování.
 - [ ] Záložka Vzorkování a aliasing.
 - [ ] Záložka Filtry.

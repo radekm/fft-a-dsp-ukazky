@@ -23,6 +23,8 @@ během přepisu.
 | DSP – chybné vstupy | lepší | chyba v návratovém typu (`error.LengthNotPowerOfTwo`) místo paniky |
 | Převody čísel | horší | `@floatFromInt` u každého převodu `usize` → `f64` |
 | Grafy | horší | egui_plot dal grafy zadarmo, v Zigu vlastní widget (asi 780 řádků) |
+| Ovládací prvky | horší | posuvník DVUI umí jen zlomek 0–1; jednotky, log. stupnici a políčko s číslem jsme doplnili sami |
+| Rozvržení panelu | srovnatelné | levý panel, posuvná oblast a grafy se skládají z boxů podobně jako v egui |
 | Stabilita jazyka | horší | API standardní knihovny a build systému se mezi verzemi Zigu mění |
 
 ## Sestavení a závislosti
@@ -225,3 +227,60 @@ sám.
 
 Tmavý motiv: barvy grafů v Rust verzi byly zvolené pro tmavé pozadí egui,
 proto i verze v Zigu používá tmavý motiv `adwaita_dark`.
+
+## Záložka „Signály a spektrum“ (`src/ui/spectrum.zig`, `src/ui/common.zig`)
+
+Rozsahem kódu je záložka podobná Rust verzi (spectrum.zig asi 410 řádků,
+spectrum.rs 453). Výpočty a čísla sedí: biny po 1 Hz, špičky 1,0 a 0,5 na
+50 Hz a 120 Hz, fáze sinusovky −90°.
+
+**Horší – ovládací prvky.** `egui::Slider` uměl v jednom řádku posuvník,
+políčko s číslem (dá se do něj psát i táhnout), jednotku („Hz“),
+logaritmickou stupnici a krok. Posuvník DVUI (`dvui.slider`) pracuje jen se
+zlomkem 0 až 1 typu `f32`. Funkce `common.slider` proto skládá posuvník,
+políčko `dvui.textEntryNumber` (do něj se dá psát) a popisek a sama
+převádí zlomek na hodnotu (lineárně i logaritmicky). Hotový
+`dvui.sliderEntry` jsme nepoužili: neumí logaritmickou stupnici a pracuje
+jen s `f32`.
+
+Políčko DVUI vypisuje číslo v plné přesnosti (`{d}`), takže po tažení
+posuvníkem by ukázalo třeba 37.29384756. Posuvník proto hodnotu zaokrouhlí
+na krok (frekvence na setiny, amplituda na setiny, fáze na celé stupně).
+Do políčka lze napsat libovolnou hodnotu. Navíc to usnadní nastavit přesné
+hodnoty, které chce učebnice (10 Hz, 0,50, 90°). Pozor na zaokrouhlení
+`f64`: `round(x / 0.01) * 0.01` dá 37.290000000000006, správně je
+`round(x * 100) / 100`.
+
+**Horší – zalamování textu.** V egui se běžný text v panelu sám zalomí do
+šířky panelu. `dvui.label` text nezalamuje, ale zkrátí ho „…“. Pro delší
+texty je třeba `dvui.textLayout`. Řádky s přepínači, které se nevejdou,
+pokračují na dalším řádku díky `dvui.flexbox` (v egui
+`horizontal_wrapped`).
+
+**Drobné odchylky od Rust verze:**
+- Písmo Inter je širší než výchozí písmo egui, proto má levý panel 320 px
+  místo 300 px a běžný text velikost 13 px.
+- V nabídce délky FFT je vidět „1024 = 2^10“ (v egui jen „1024“), protože
+  `dvui.dropdown` ukazuje vybranou položku tak, jak je v seznamu.
+- Tlačítko „Přidat složku“ je při šesti složkách jen zašedlé
+  (`grayed`), DVUI nemá zakázaný stav tlačítka.
+
+**Srovnatelné – rozvržení.** Levý panel s posuvnou oblastí a pravá oblast
+s grafy se skládají z `dvui.box` a `dvui.scrollArea`, podobně jako
+`egui::Panel::left` a `ScrollArea`. Výšku grafů lze spočítat z velikosti
+boxu hned po jeho vytvoření, stejně jako `ui.available_height()` v egui.
+
+**Lepší – kešování výsledku.** Rust verze porovnávala nastavení přes
+`#[derive(PartialEq)]`. V Zigu stačí `std.meta.eql`, ale nastavení obsahuje
+pole šesti složek, z nichž platí jen několik prvních. Vlastní funkce `eql`
+porovná jen platné složky. Pevné pole místo `Vec` znamená, že nastavení
+nepotřebuje alokaci a dá se kopírovat jako hodnota.
+
+**Jazyk – drobnosti, na které jsme narazili:**
+- Operátor `**` (opakování pole) už v Zigu 0.17 není; pole se plní přes
+  `@splat` a přiřazení.
+- Zig nedovolí, aby lokální proměnná nebo parametr měly stejné jméno jako
+  funkce ve stejném souboru (`text`, `row`). Rust zastínění dovoluje.
+- Ostré špičky spektra se při napojování úseků čáry způsobem `.strip`
+  zkracovaly (špička 1,0 vypadala jako 0,75). Výchozí `.miter` je kreslí
+  správně.

@@ -589,7 +589,6 @@ fn drawSeries(transform: Transform, series: Series, scale: f32) void {
                 dvui.Path.stroke(.{ .points = screen_points[0..count] }, .{
                     .thickness = thickness,
                     .color = .{ .color = series.color },
-                    .join = .strip,
                 });
             }
         },
@@ -645,8 +644,8 @@ fn drawGrid(transform: Transform, font: dvui.Font, scale: f32, text_color: Color
         }
     }
 
-    // Vodorovné čáry a čísla osy y: dílek zhruba na každých 40 pixelů.
-    const y_ticks = Ticks.init(transform.y, rect.h / scale / 40);
+    // Vodorovné čáry a čísla osy y: dílek zhruba na každých 28 pixelů.
+    const y_ticks = Ticks.init(transform.y, rect.h / scale / 28);
     var y_tick = y_ticks.firstMinor();
     while (y_tick <= transform.y.max) : (y_tick += y_ticks.minor) {
         const py = transform.toScreen(.{ .x = 0, .y = y_tick }).y;
