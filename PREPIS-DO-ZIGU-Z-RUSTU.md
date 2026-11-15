@@ -344,7 +344,7 @@ Výsledky odpovídají číslům v učebnici (lekce 14): pro IIR dolní propust
 Snímek `docs/ucebnice/img/14-vychozi.png` z Rust verze ukazuje mírně jiné
 koeficienty (0,06754; −1,14435; 0,41449), které přesně odpovídají Q = 0,71.
 Snímek tedy vznikl s Q zaokrouhleným na dvě desetinná místa, výpočet je
-v obou verzích stejný. Kód má 498 řádků (Rust 597).
+v obou verzích stejný. Kód má 565 řádků (Rust 597).
 
 **Srovnatelné – dva sloupce grafů.** egui má `ui.columns(2, …)`, v DVUI
 stačí vodorovný box s volbou `equal_space` a dvěma svislými boxy.
