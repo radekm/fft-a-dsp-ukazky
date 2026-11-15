@@ -110,7 +110,11 @@ fn roundToStep(value: f64, step: f64) f64 {
 fn numberEntry(value: *f64, options: SliderOptions) bool {
     var entry: dvui.TextEntryWidget = undefined;
     entry.init(@src(), .{ .text = .{ .internal = .{ .limit = 32 } } }, .{
-        .min_size_content = .{ .w = number_width },
+        // Výšku je nutné zadat také: naše `min_size_content` nahradí
+        // výchozí velikost z DVUI celou a prázdné políčko by se jinak
+        // smrsklo na pár pixelů. Výška textu „0“ je stejná, jakou má
+        // políčko s číslem.
+        .min_size_content = .{ .w = number_width, .h = dvui.themeGet().font_body.textSize("0").h },
         .max_size_content = .width(number_width),
         .gravity_y = 0.5,
         .padding = .{ .x = 4, .y = 2, .w = 4, .h = 2 },
