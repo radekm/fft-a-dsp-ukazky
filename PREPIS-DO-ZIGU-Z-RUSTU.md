@@ -336,3 +336,32 @@ uvolní (vstup a výstup DFT), jsou v bloku `blk: { ... break :blk výsledek; }`
 s vlastními `defer`. Paměť se uvolní hned na konci bloku a ve zbytku funkce
 mezivýsledky nepřekážejí. V Rustu se o to stará automatický `Drop`
 na konci bloku, v Zigu je to vidět přímo v kódu.
+
+## Záložka „Filtry“ (`src/ui/filters.zig`)
+
+Výsledky odpovídají číslům v učebnici (lekce 14): pro IIR dolní propust
+100 Hz s Q = 1/√2 vychází b0 = 0,06746, a1 = −1,14298, a2 = 0,41280.
+Snímek `docs/ucebnice/img/14-vychozi.png` z Rust verze ukazuje mírně jiné
+koeficienty (0,06754; −1,14435; 0,41449), které přesně odpovídají Q = 0,71.
+Snímek tedy vznikl s Q zaokrouhleným na dvě desetinná místa, výpočet je
+v obou verzích stejný. Kód má 498 řádků (Rust 597).
+
+**Srovnatelné – dva sloupce grafů.** egui má `ui.columns(2, …)`, v DVUI
+stačí vodorovný box s volbou `equal_space` a dvěma svislými boxy.
+
+**Horší – políčko s číslem.** Tlačítko „Q = 0,707“ nastaví Q na přesně
+1/√2. `dvui.textEntryNumber` by ukázal 0.7071067811865476 (do políčka se to
+nevejde). Políčko u posuvníku je proto vlastní (`common.numberEntry`): dokud
+do něj uživatel nepíše, ukazuje číslo zaokrouhlené na pevný počet míst
+(jako `fixed_decimals` v egui), při psaní mění hodnotu průběžně. Uložená
+hodnota zůstává přesná. Rozpoznat, zda uživatel do políčka právě píše,
+jde přes `dvui.focusedWidgetId()`.
+
+**Lepší – `errdefer` u větvení.** Výpočet má dvě větve (FIR a IIR), každá
+alokuje jinak. `errdefer` uvnitř větve uvolní jen to, co alokovala tato
+větev, a `errdefer` za větvením pak hlídá zbytek funkce. Při chybě se tak
+uvolní přesně to, co už existuje. V Rustu to řeší `Drop` automaticky.
+
+**Doplněno do widgetu grafu:** čárkovaná lomená čára (zesílení filtru
+ve spektru, v egui `LineStyle::dashed_loose`) a menší rozestup dílků
+na ose x pro úzké grafy (v egui `AxisHints::label_spacing`).

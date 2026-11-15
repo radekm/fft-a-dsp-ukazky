@@ -94,7 +94,7 @@ pub const Style = struct {
     width: f32 = 1.5,
     /// Poloměr bodů (u stonků a bodů) v logických pixelech.
     radius: f32 = 2,
-    /// Čárkovaná čára (jen u svislých čar).
+    /// Čárkovaná čára (u svislých a lomených čar).
     dashed: bool = false,
     /// Délka čárky a mezery v logických pixelech (u čárkované čáry).
     dash_length: f32 = 6,
@@ -125,6 +125,9 @@ pub const Options = struct {
     default_x: ?Range = null,
     /// Automatický rozsah osy y; když chybí, určí se z dat.
     default_y: ?Range = null,
+    /// Přibližná vzdálenost hlavních dílků na ose x v logických pixelech
+    /// (u úzkých grafů menší, aby tam nebyla jen nula).
+    x_tick_spacing: f32 = 80,
     /// Sdílená osa x s jinými grafy.
     linked_x: ?*LinkedAxis = null,
     /// Odliší více grafů vytvořených na stejném řádku zdrojového kódu.
@@ -277,7 +280,7 @@ pub const Plot = struct {
 
         // Pozadí a rámeček kreslicí plochy.
         data_rect.fill(.{}, .{ .color = .{ .color = theme.fill.opacity(0.6) } });
-        drawGrid(transform, tick_font, scale, theme.text);
+        drawGrid(transform, tick_font, scale, theme.text, self.options.x_tick_spacing);
 
         // Křivky se kreslí jen dovnitř kreslicí plochy.
         const previous_clip = dvui.clip(data_rect);
@@ -620,6 +623,10 @@ fn drawSeries(transform: Transform, series: Series, scale: f32) void {
             // vrcholů, na bod čáry jich padne několik). Dlouhou čáru proto
             // kreslíme po úsecích; sousední úseky sdílejí jeden bod, aby
             // čára nebyla přerušená.
+            if (series.style.dashed) {
+                strokeDashed(screen_points[0..count], series.style, scale, series.color);
+                return;
+            }
             var start: usize = 0;
             while (start + 1 < count) {
                 const end = @min(start + max_points_per_stroke, count);
@@ -665,7 +672,7 @@ fn drawSeries(transform: Transform, series: Series, scale: f32) void {
 }
 
 /// Mřížka a čísla na osách.
-fn drawGrid(transform: Transform, font: dvui.Font, scale: f32, text_color: Color) void {
+fn drawGrid(transform: Transform, font: dvui.Font, scale: f32, text_color: Color, x_tick_spacing: f32) void {
     const rect = transform.rect;
     const minor_color = text_color.opacity(0.06);
     const major_color = text_color.opacity(0.16);
@@ -673,8 +680,8 @@ fn drawGrid(transform: Transform, font: dvui.Font, scale: f32, text_color: Color
     const line_height = font.lineHeight() * scale;
     var buffer: [32]u8 = undefined;
 
-    // Svislé čáry a čísla osy x: dílek zhruba na každých 80 pixelů.
-    const x_ticks = Ticks.init(transform.x, rect.w / scale / 80);
+    // Svislé čáry a čísla osy x: dílek zhruba na každých `x_tick_spacing` pixelů.
+    const x_ticks = Ticks.init(transform.x, rect.w / scale / x_tick_spacing);
     var x_tick = x_ticks.firstMinor();
     while (x_tick <= transform.x.max) : (x_tick += x_ticks.minor) {
         const px = transform.toScreen(.{ .x = x_tick, .y = 0 }).x;
@@ -797,6 +804,38 @@ fn drawText(font: dvui.Font, text: []const u8, top_left: PhysicalPoint, scale: f
         .rs = .{ .r = PhysicalRect.fromPoint(top_left).toSize(.{ .w = size.w * scale, .h = size.h * scale }), .s = scale },
         .color = color,
     }) catch |err| log.warn("cannot draw text error={s}", .{@errorName(err)});
+}
+
+/// Čárkovaná lomená čára: podél čáry se střídají čárky a mezery, vzor
+/// navazuje přes zlomy čáry.
+fn strokeDashed(points: []const PhysicalPoint, style: Style, scale: f32, color: Color) void {
+    const dash = style.dash_length * scale;
+    const gap = style.gap_length * scale;
+    const thickness = style.width * scale;
+    // Kde ve vzoru „čárka + mezera“ právě jsme (0 až dash + gap).
+    var phase: f32 = 0;
+    for (points[0 .. points.len - 1], points[1..]) |from, to| {
+        const length = std.math.hypot(to.x - from.x, to.y - from.y);
+        if (length == 0) continue;
+        var position: f32 = 0;
+        while (position < length) {
+            const in_dash = phase < dash;
+            const remaining_in_part = if (in_dash) dash - phase else dash + gap - phase;
+            const step = @min(remaining_in_part, length - position);
+            if (in_dash) {
+                const a = position / length;
+                const b = (position + step) / length;
+                strokeLine(
+                    .{ .x = from.x + (to.x - from.x) * a, .y = from.y + (to.y - from.y) * a },
+                    .{ .x = from.x + (to.x - from.x) * b, .y = from.y + (to.y - from.y) * b },
+                    thickness,
+                    color,
+                );
+            }
+            position += step;
+            phase = @mod(phase + step, dash + gap);
+        }
+    }
 }
 
 fn strokeLine(from: PhysicalPoint, to: PhysicalPoint, thickness: f32, color: Color) void {

@@ -8,6 +8,7 @@ const Tab = ui.Tab;
 const SpectrumTab = @import("ui/spectrum.zig").SpectrumTab;
 const WindowsTab = @import("ui/windows.zig").WindowsTab;
 const SamplingTab = @import("ui/sampling.zig").SamplingTab;
+const FiltersTab = @import("ui/filters.zig").FiltersTab;
 
 const log = std.log.scoped(.app);
 
@@ -17,12 +18,14 @@ pub const App = struct {
     spectrum: SpectrumTab = .{},
     windows: WindowsTab = .{},
     sampling: SamplingTab = .{},
+    filters: FiltersTab = .{},
 
     /// Uvolní výsledky výpočtů všech záložek.
     pub fn deinit(self: *App, allocator: std.mem.Allocator) void {
         self.spectrum.deinit(allocator);
         self.windows.deinit(allocator);
         self.sampling.deinit(allocator);
+        self.filters.deinit(allocator);
     }
 
     /// Nakreslí jeden snímek celé aplikace. Výsledky výpočtů, které přežívají
@@ -49,9 +52,7 @@ pub const App = struct {
             .spectrum => try self.spectrum.show(allocator),
             .windows => try self.windows.show(allocator),
             .sampling => try self.sampling.show(allocator),
-            .filters => {
-                dvui.label(@src(), "Záložka „{s}“ se teprve přepisuje.", .{self.selected_tab.title()}, .{});
-            },
+            .filters => try self.filters.show(allocator),
         }
     }
 

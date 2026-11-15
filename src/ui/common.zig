@@ -38,6 +38,8 @@ pub const SliderOptions = struct {
     logarithmic: bool = false,
     /// Jednotka za číslem, např. „Hz“.
     suffix: []const u8 = "",
+    /// Počet desetinných míst v políčku; když chybí, odvodí se z kroku.
+    decimals: ?usize = null,
     id_extra: usize = 0,
 };
 
@@ -61,18 +63,7 @@ pub fn slider(src: std.builtin.SourceLocation, label: []const u8, value: *f64, o
         changed = true;
     }
 
-    const result = dvui.textEntryNumber(@src(), f64, .{
-        .value = value,
-        .min = options.min,
-        .max = options.max,
-    }, .{
-        .min_size_content = .{ .w = number_width },
-        .max_size_content = .width(number_width),
-        .gravity_y = 0.5,
-        .padding = .{ .x = 4, .y = 2, .w = 4, .h = 2 },
-        .margin = .{ .x = 2, .y = 1, .w = 2, .h = 1 },
-    });
-    if (result.changed) changed = true;
+    if (numberEntry(value, options)) changed = true;
 
     if (options.suffix.len > 0) {
         dvui.labelNoFmt(@src(), options.suffix, .{}, .{ .gravity_y = 0.5 });
@@ -90,6 +81,62 @@ fn roundToStep(value: f64, step: f64) f64 {
         return @round(value * inverse) / inverse;
     }
     return @round(value / step) * step;
+}
+
+/// Políčko s číslem. Dokud do něj uživatel nepíše, ukazuje hodnotu
+/// zaokrouhlenou na pevný počet desetinných míst (jako `fixed_decimals`
+/// v egui); uložená hodnota zůstává přesná. Při psaní se hodnota mění
+/// průběžně, pokud je text platné číslo v rozsahu.
+fn numberEntry(value: *f64, options: SliderOptions) bool {
+    var entry: dvui.TextEntryWidget = undefined;
+    entry.init(@src(), .{ .text = .{ .internal = .{ .limit = 32 } } }, .{
+        .min_size_content = .{ .w = number_width },
+        .max_size_content = .width(number_width),
+        .gravity_y = 0.5,
+        .padding = .{ .x = 4, .y = 2, .w = 4, .h = 2 },
+        .margin = .{ .x = 2, .y = 1, .w = 2, .h = 1 },
+    });
+    defer entry.deinit();
+
+    const focused = dvui.focusedWidgetId() == entry.data().id;
+    if (!focused) {
+        var buffer: [32]u8 = undefined;
+        entry.textSet(formatNumber(&buffer, value.*, displayDecimals(options)), false);
+    }
+    entry.processEvents();
+    entry.filterIn("0123456789+-.e");
+
+    var changed = false;
+    if (focused and entry.text_changed) {
+        if (std.fmt.parseFloat(f64, entry.textGet())) |typed| {
+            if (typed >= options.min and typed <= options.max and typed != value.*) {
+                value.* = typed;
+                changed = true;
+            }
+        } else |_| {}
+    }
+    entry.draw();
+    return changed;
+}
+
+/// Počet desetinných míst v políčku: zadaný, nebo podle kroku posuvníku
+/// (krok 0.01 → 2 místa, krok 1 → 0 míst).
+fn displayDecimals(options: SliderOptions) usize {
+    if (options.decimals) |decimals| return decimals;
+    if (options.step <= 0 or options.step >= 1) return if (options.step >= 1) 0 else 2;
+    return @intFromFloat(@ceil(-@log10(options.step) - 1e-9));
+}
+
+/// Číslo s pevným počtem desetinných míst; „-0“ se vypíše jako „0“.
+fn formatNumber(buffer: []u8, value: f64, decimals: usize) []const u8 {
+    const formatted = std.fmt.bufPrint(buffer, "{[value]d:.[decimals]}", .{ .value = value, .decimals = decimals }) catch return "?";
+    if (formatted.len > 0 and formatted[0] == '-') {
+        for (formatted[1..]) |char| {
+            if (char != '0' and char != '.') return formatted;
+        }
+        return formatted[1..];
+    }
+    return formatted;
 }
 
 fn toFraction(value: f64, options: SliderOptions) f64 {

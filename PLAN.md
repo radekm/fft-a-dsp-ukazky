@@ -137,7 +137,7 @@ Rust verze je předloha: stejné záložky, ovládání, výchozí hodnoty a č�
 - [x] Záložka Signály a spektrum.
 - [x] Záložka Okna a prosakování.
 - [x] Záložka Vzorkování a aliasing.
-- [ ] Záložka Filtry.
+- [x] Záložka Filtry.
 - [ ] Porovnání s Rust verzí: stejná čísla a srovnatelné snímky všech záložek.
 - [ ] Shrnutí v `PREPIS-DO-ZIGU-Z-RUSTU.md`.
 - [ ] Na pokyn autora: aktualizace `README.md`, `docs/` a učebnice
