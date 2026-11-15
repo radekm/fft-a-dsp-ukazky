@@ -513,3 +513,114 @@ Zajímavost: `zig fmt` v Zigu 0.17 sám přepisuje zastaralé `@intFromEnum`
 na novější `@backingInt`. Formátovač tedy mění i význam kódu, nejen
 mezery, a jedno místo tím rozbil (dvě různé úpravy se potkaly na jednom
 řádku). Další drobný příklad nestability jazyka před verzí 1.0.
+
+## Webová verze (WebAssembly)
+
+Po dokončení přepisu přibyla webová verze: tentýž program přeložený pro
+`wasm32-freestanding` s webovým backendem DVUI. Kreslí do `<canvas>` přes
+WebGL, události z prohlížeče předává `web.js` z DVUI. Sestavení
+a spuštění popisuje `README.md`.
+
+**Celkově snadné.** Program běžel v prohlížeči napoprvé, jakmile se
+přeložil. Kód záložek, grafu ani DSP se neměnil (kromě dvou řádků s typem,
+viz níže). Celá změna má asi 160 řádků, z toho 100 v `build.zig`.
+
+| Měřeno na stejném stroji | Desktop (SDL3) | Web (Chrome) |
+|---|---|---|
+| Velikost programu, ReleaseSmall | 3,3 MB (+ `libSDL3.so` 4,0 MB) | 2,2 MB `.wasm` + 66 kB `web.js` |
+| Velikost programu, Debug | – | 8,6 MB `.wasm` |
+| DFT pro N = 4096, ReleaseSmall | 199 ms | 302 ms |
+| DFT pro N = 4096, Debug | 562 ms | 547 ms |
+| FFT pro N = 4096, Debug | 1,2 ms | pod 1 ms |
+
+Čísla ve všech záložkách se shodují s desktopem (koeficienty filtrů,
+chyba zpětné FFT 7,1·10⁻¹⁴ pro N = 4096, hodnoty v popiscích u kurzoru).
+Kus `.wasm` tvoří písmo Inter (2 × 340 kB).
+
+### Co šlo snadno
+
+- **Abstrakce `dvui.App`.** Program nemá vlastní hlavní smyčku, jen dodává
+  `startFn`, `initFn`, `frameFn` a `deinitFn`. Webový backend je volá
+  stejně jako SDL3, takže `main.zig` zůstal skoro beze změny.
+- **Sestavení.** Do `build.zig` stačilo načíst DVUI podruhé, s jinými
+  volbami (`.backend = .web`, cíl `wasm32-freestanding`). Obě instance
+  existují vedle sebe a desktop se nijak nezměnil. Krok `zig build web`
+  je inspirovaný funkcí `addWebExample` v `build.zig` DVUI: `.wasm` bez
+  vstupního bodu (`entry = .disabled`), `web.js` z DVUI a `index.html`,
+  do kterého nástroj `cacheBuster` z DVUI doplní otisk souborů (prohlížeč
+  pak po novém sestavení nepoužije starou verzi z mezipaměti).
+- **Žádné nové stahování.** Webový backend nepotřebuje SDL3 ani jiné
+  balíčky, používá stb_truetype a stb_image přibalené v DVUI. Webovou verzi
+  jde sestavit i na stroji bez SDL3.
+- **Křížový překlad je v Zigu samozřejmost.** Žádný další překladač ani
+  nástroj (v Rustu `rustup target add`, `wasm-bindgen`, `trunk`).
+- **Ovládání.** Posuvníky, psaní čísel, rozbalovací seznamy, tažení
+  a přibližování grafů, dvojklik i popisek u kurzoru fungují stejně jako
+  na desktopu. `web.js` volá u kolečka nad plátnem `preventDefault()`,
+  takže Ctrl + kolečko přibližuje graf a nezvětší celou stránku. Na displeji
+  s vysokým rozlišením (devicePixelRatio 2) je vše ostré.
+
+### Co bylo potřeba změnit
+
+- **`usize` má ve WebAssembly 32 bitů.** Exponent délky FFT měl typ `u6`,
+  aby šel použít jako posun v `@as(usize, 1) << exponent`. Pro 64bitový
+  `usize` musí být posun `u6`, pro 32bitový `u5` – Zig typ posunu kontroluje
+  přesně a kód se nepřeložil. Oprava: `std.math.Log2Int(usize)`, typ
+  odvozený z šířky `usize`. Chyba se ukázala až při překladu pro jiný cíl;
+  přesná kontrola je tu výhoda (v Rustu je posun libovolným celým číslem
+  a přetečení se hlídá až za běhu).
+- **Logování.** Naše `logFn` píše přes `std.Io` na standardní výstup a čte
+  `LOG_LEVEL` z prostředí; ve `wasm32-freestanding` nic z toho není a
+  standardní knihovna se ani nepřeloží (chybí `getrandom`, `IOV_MAX`).
+  Na webu se proto za překladu (`builtin.cpu.arch.isWasm()`) použije
+  `dvui.App.logFn`, která píše do konzole prohlížeče. Úroveň je pevně
+  `info`: `logFn` z DVUI úrovně nefiltruje a s úrovní `debug` by konzoli
+  zahltily zprávy z každého snímku. Protože Zig překládá jen použitý kód,
+  stačila podmínka v `std_options`; vlastní `logFn` se pro web vůbec
+  nepřekládá.
+- **`index.html`.** Upravená kopie z DVUI: český titulek, `lang="cs"`
+  a jméno našeho `.wasm`.
+
+### Co funguje hůř
+
+- **Měření času po milisekundách.** Webový backend DVUI vrací v `nanoTime`
+  hodnotu `performance.now()` oříznutou na celé milisekundy. Doba FFT
+  vycházela 0 nebo přesně 1000 µs. Na webu se proto ukazuje v celých ms
+  („pod 1 ms“) s poznámkou. Opravit by to šlo jen v DVUI (`web.zig`).
+- **Rychlost.** Výpočty jsou v release asi 1,5× pomalejší než nativně
+  (WebAssembly bez SIMD, jedno vlákno). Pro učební program to nevadí,
+  DFT pro N = 4096 trvá 0,3 s.
+- **Mírně jiné vykreslení textu.** Web používá stb_truetype, desktop
+  FreeType. Šířky textu se nepatrně liší, takže dlouhé poznámky se jinde
+  zalomí a grafy mají o pixel jinou velikost. Čísla v popiscích u kurzoru
+  se proto pro stejné místo obrazovky liší v posledních platných číslicích
+  (souřadnice kurzoru, ne výpočet); u bodů křivek jsou stejná.
+- **`LOG_LEVEL` není.** Úroveň logu se dá změnit jen novým překladem.
+- **Nutný HTTP server.** Prohlížeč z `file://` WebAssembly nenačte.
+  DVUI přibaluje malý server (`zig build serve-web`, port 8080), servíruje
+  ale jen tři soubory (`favicon.ico` vrací 404, což nevadí).
+
+Nic nezůstalo nefunkční.
+
+### Srovnání s Rustem (jen pro kontext, neověřeno)
+
+Rust verzi jsme neměnili. eframe webový běh podporuje (`eframe::WebRunner`
+přes `wasm-bindgen`), takže by šlo o podobný rozsah práce, ale s jinými
+překážkami:
+
+- Cíl `wasm32-unknown-unknown` a k tomu nástroje `wasm-bindgen-cli` nebo
+  `trunk`; navíc crates `wasm-bindgen`, `wasm-bindgen-futures`, `web-sys`
+  – tedy rozšíření seznamu povolených závislostí.
+- Zvlášť vstupní bod pro web (`#[cfg(target_arch = "wasm32")]`), protože
+  `fn main` s `eframe::run_native` tam nefunguje.
+- `std::time::Instant` na `wasm32-unknown-unknown` za běhu spadne, měření
+  doby transformace by potřebovalo jiné hodiny (např. crate `web-time`).
+  Zig s DVUI se tomu vyhnul díky `nanoTime` backendu, i když s horší
+  přesností.
+- Logování přes `tracing-subscriber` a `tracing-appender` (soubor) by se
+  muselo nahradit výstupem do konzole a `color-eyre` by na webu ztratil
+  smysl.
+
+Zig tu vychází jednodušeji hlavně díky vestavěnému křížovému překladu
+a tomu, že webový backend DVUI je hotový včetně JavaScriptu; Rust
+by výměnou za víc nástrojů dal lepší napojení na API prohlížeče.
