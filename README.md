@@ -31,6 +31,32 @@ zig build run -Doptimize=ReleaseSafe
 
 Přeložený program je pak v `zig-out/bin/fft-dsp-demos`.
 
+## Webová verze
+
+Tentýž program jde přeložit do WebAssembly a spustit v prohlížeči
+(webový backend DVUI, kreslí přes WebGL). SDL3 k tomu potřeba není.
+
+```
+zig build web -Doptimize=ReleaseSmall
+```
+
+Do `zig-out/web/` se nainstalují tři soubory: `index.html`, `web.js`
+a `fft-dsp-demos.wasm` (v ReleaseSmall asi 2 MB). Stránku nejde otevřít
+přímo ze souboru (`file://`), prohlížeč by `.wasm` nenačetl – soubory musí
+servírovat HTTP server. Nejjednodušší je malý server, který přibaluje DVUI:
+
+```
+zig build serve-web -Doptimize=ReleaseSmall
+```
+
+a pak otevřít http://localhost:8080. Poslouží i jakýkoli jiný statický
+server, např. `python3 -m http.server -d zig-out/web 8080`.
+
+Rozdíly proti desktopu: log jde do konzole prohlížeče (vývojářské nástroje)
+a proměnná `LOG_LEVEL` tu není, platí úroveň `info`. Doba transformace
+se ukazuje jen v celých milisekundách. Výpočty jsou zhruba o polovinu
+pomalejší než na desktopu.
+
 ## Dokumentace
 
 Ke každé záložce je česky vysvětlena teorie, co zkoušet a čeho si všímat,
@@ -61,4 +87,5 @@ LOG_LEVEL=debug zig build run
 zig fmt --check build.zig build.zig.zon src
 zig build
 zig build test
+zig build web
 ```
