@@ -8,7 +8,35 @@ Ke každé zkušenosti je uvedeno, jestli je výsledek v Zigu **lepší**, **hor
 **srovnatelný**, nebo jestli něco **nejde** přepsat. Záznamy přibývají postupně
 během přepisu.
 
-## Shrnutí
+## Celkový dojem
+
+Přepsat šlo všechno: všechny čtyři záložky, všechny výpočty a všech 38 testů.
+Nic z Rust verze nezůstalo nepřepsané. Čísla v programu se shodují s Rust
+verzí i s čísly v učebnici. Odchylky jsou jen ve vzhledu: širší panel,
+větší písmo a ovládací prvky, posuvníky zaokrouhlují na setiny.
+
+Nejvíc práce navíc stálo uživatelské rozhraní. egui s egui_plot dávají
+hotové grafy s přibližováním a legendou a posuvníky s jednotkami
+a logaritmickou stupnicí. V DVUI bylo potřeba napsat vlastní widget grafu
+(asi 870 řádků) a vlastní posuvník s políčkem. Proto má verze v Zigu
+asi 4 900 řádků proti 3 900 v Rustu, přestože DSP i záložky mají délku
+podobnou.
+
+Zig byl lepší tam, kde jde o přehled nad pamětí a o kontrolu: DSP je
+oddělené od UI přímo překladačem, testy hlídají úniky paměti, chyby jsou
+v návratovém typu a bezpečnostní kontroly v režimu Debug okamžitě odhalily
+pád uvnitř DVUI (přetečení indexu vrcholů). Horší byla čitelnost vzorců
+(žádné přetěžování operátorů), převody čísel a nestabilita jazyka
+před verzí 1.0.
+
+| Měřeno na stejném stroji | Zig + DVUI | Rust + egui |
+|---|---|---|
+| Řádků kódu (včetně testů a komentářů) | 4 899 | 3 913 |
+| První sestavení release, bez stažených závislostí v mezipaměti | 1 min 43 s | 3 min 10 s |
+| Velikost programu po `strip` | 5,0 MB (+ systémové `libSDL3.so` 4,0 MB) | 8,7 MB |
+| Dynamicky linkované knihovny | `libSDL3`, `libc`, `libm` | `libc`, `libm`, `libgcc_s` (OpenGL a X11 se načítají za běhu) |
+
+## Shrnutí po oblastech
 
 | Oblast | Výsledek | Poznámka |
 |---|---|---|
@@ -22,11 +50,14 @@ během přepisu.
 | DSP – správa paměti | horší i lepší | explicitní alokátor a `defer free` všude; testy ale samy hlídají úniky |
 | DSP – chybné vstupy | lepší | chyba v návratovém typu (`error.LengthNotPowerOfTwo`) místo paniky |
 | Převody čísel | horší | `@floatFromInt` u každého převodu `usize` → `f64` |
-| Grafy | horší | egui_plot dal grafy zadarmo, v Zigu vlastní widget (asi 780 řádků) |
+| Grafy | horší | egui_plot dal grafy zadarmo, v Zigu vlastní widget (asi 870 řádků) |
 | Ovládací prvky | horší | posuvník DVUI umí jen zlomek 0–1; jednotky, log. stupnici a políčko s číslem jsme doplnili sami |
 | Rozvržení panelu | srovnatelné | levý panel, posuvná oblast a grafy se skládají z boxů podobně jako v egui |
+| Políčko s číslem | horší | `dvui.textEntryNumber` ukazuje plnou přesnost, vlastní políčko s pevným počtem míst |
 | Dlouhé čáry v DVUI | horší | index vrcholu `u16`: čára s 16 000 body shodila program, kreslí se po úsecích |
 | Stabilita jazyka | horší | API standardní knihovny a build systému se mezi verzemi Zigu mění |
+| Bezpečnostní kontroly | lepší | v Debug/ReleaseSafe Zig okamžitě a přesně ukázal přetečení uvnitř DVUI |
+| Výsledná čísla | stejné | všechny testy i čísla v učebnici souhlasí |
 
 ## Sestavení a závislosti
 
@@ -190,7 +221,8 @@ se nastavil několika řádky (`Plot::new(...).legend(...).link_axis(...)`)
 a přibližování, posun, legenda, mřížka i dílky os fungovaly samy. Graf
 v DVUI (`dvui.plot`) umí jen osy, čáry, sloupce a jednoduchý popisek;
 chybí přibližování a posun, legenda, propojené osy a čárkované čáry.
-Proto vznikl vlastní widget: asi 780 řádků v jednom souboru.
+Proto vznikl vlastní widget: asi 870 řádků v jednom souboru (po doplnění
+všeho, co potřebovaly záložky).
 
 Co widget umí (stejně jako grafy v Rust verzi):
 - lomené čáry, body se stonky, svislé (i čárkované) čáry, barvy a tloušťky,
@@ -231,7 +263,7 @@ proto i verze v Zigu používá tmavý motiv `adwaita_dark`.
 
 ## Záložka „Signály a spektrum“ (`src/ui/spectrum.zig`, `src/ui/common.zig`)
 
-Rozsahem kódu je záložka podobná Rust verzi (spectrum.zig 434 řádků,
+Rozsahem kódu je záložka podobná Rust verzi (spectrum.zig 426 řádků,
 spectrum.rs 453). Výpočty a čísla sedí: biny po 1 Hz, špičky 1,0 a 0,5 na
 50 Hz a 120 Hz, fáze sinusovky −90°.
 
