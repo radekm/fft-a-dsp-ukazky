@@ -4,6 +4,7 @@
 //! Vysvětlení a návod, co zkoušet: `docs/01-signaly-a-spektrum.md`.
 
 const std = @import("std");
+const builtin = @import("builtin");
 const Allocator = std.mem.Allocator;
 const dvui = @import("dvui");
 const dsp = @import("dsp");
@@ -163,8 +164,21 @@ pub const SpectrumTab = struct {
             _ = common.radioValue(@src(), Algorithm, &self.settings.algorithm, .dft, "DFT (podle definice)");
         }
         if (self.computed) |computed| {
-            const microseconds = @as(f64, @floatFromInt(computed.transform_ns)) / 1000;
-            common.text(@src(), "Doba transformace: {d:.0} µs", .{microseconds});
+            if (builtin.cpu.arch.isWasm()) {
+                // Webový backend DVUI měří čas jen po celých milisekundách
+                // (`performance.now()` ořízne na celé číslo), mikrosekundy
+                // by tu předstíraly přesnost, kterou nemáme.
+                const milliseconds = computed.transform_ns / std.time.ns_per_ms;
+                if (milliseconds == 0) {
+                    common.text(@src(), "Doba transformace: pod 1 ms", .{});
+                } else {
+                    common.text(@src(), "Doba transformace: {d} ms", .{milliseconds});
+                }
+                common.weak(@src(), "V prohlížeči se čas měří jen po celých ms.");
+            } else {
+                const microseconds = @as(f64, @floatFromInt(computed.transform_ns)) / 1000;
+                common.text(@src(), "Doba transformace: {d:.0} µs", .{microseconds});
+            }
             common.text(@src(), "Zpětná FFT vrátí signál s chybou nejvýš {e:.1}", .{computed.round_trip_error});
         }
         common.weak(@src(), "Obě metody dávají stejné spektrum, liší se jen rychlostí.");
