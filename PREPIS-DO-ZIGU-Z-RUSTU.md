@@ -54,7 +54,7 @@ před verzí 1.0.
 | Ovládací prvky | horší | posuvník DVUI umí jen zlomek 0–1; jednotky, log. stupnici a políčko s číslem jsme doplnili sami |
 | Rozvržení panelu | srovnatelné | levý panel, posuvná oblast a grafy se skládají z boxů podobně jako v egui |
 | Políčko s číslem | horší | `dvui.textEntryNumber` ukazuje plnou přesnost, vlastní políčko s pevným počtem míst |
-| Dlouhé čáry v DVUI | horší | index vrcholu `u16`: čára s 16 000 body shodila program, kreslí se po úsecích |
+| Dlouhé čáry v DVUI | horší | `strokeTriangles` v DVUI má index vrcholu napevno `u16` (chyba DVUI, volba `vertex-index` nepomůže): čára s 16 000 body shodila program, kreslí se po úsecích |
 | Stabilita jazyka | horší | API standardní knihovny a build systému se mezi verzemi Zigu mění |
 | Bezpečnostní kontroly | lepší | v Debug/ReleaseSafe Zig okamžitě a přesně ukázal přetečení uvnitř DVUI |
 | Výsledná čísla | stejné | všechny testy i čísla v učebnici souhlasí |
@@ -332,8 +332,12 @@ několik) skončí přetečením celého čísla. V režimu Debug to Zig zachyt�
 a program spadne s hlášením „integer overflow“ a přesným místem. Bez
 kontrol (ReleaseFast) by šlo o nedefinované chování. egui se s tím
 nepotýkalo. Zkusili jsme přepnout DVUI volbou `vertex-index` na
-32bitové indexy, ale nepomohlo to: funkce `strokeTriangles` v DVUI
-(`src/Path.zig`) má index vrcholu napevno jako `u16` a volbu ignoruje.
+32bitové indexy, ale nepomohlo to. Funkce `strokeTriangles` v DVUI
+(`src/Path.zig`, commit `485a1ed`) je v tomto ohledu rozbitá: index vrcholu
+má napevno jako `u16` (např. `const vtx_base: u16 = ...`) a volbu
+`vertex-index` ignoruje, přestože zbytek DVUI typ indexu bere z této volby
+(`dvui.Vertex.Index`). Jde o chybu v DVUI, ne o omezení backendu SDL3, který
+32bitové indexy umí.
 Widget grafu proto kreslí dlouhé čáry po úsecích nejvýš 2 000 bodů
 a DVUI zůstává s výchozími 16bitovými indexy. Pozitivní je, že bezpečnostní kontroly Zigu
 chybu ukázaly okamžitě a přesně.
