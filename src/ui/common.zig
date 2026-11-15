@@ -21,6 +21,23 @@ const number_width: f32 = 52;
 /// Největší amplituda, kterou lze nastavit u složky signálu.
 const max_component_amplitude = 2.0;
 
+/// Barvy křivek, zvolené pro světlý motiv (na bílém pozadí dobře čitelné).
+/// Rust verze měla tmavý motiv a světlejší odstíny stejných barev.
+pub const colors = struct {
+    /// Šedá: původní nebo vstupní signál, srovnání bez okna.
+    pub const gray: dvui.Color = .{ .r = 140, .g = 140, .b = 140 };
+    /// Modrá: hlavní výsledek (signál s oknem, výstup filtru, rekonstrukce).
+    pub const blue: dvui.Color = .{ .r = 30, .g = 110, .b = 220 };
+    /// Jantarová: okno, charakteristika filtru.
+    pub const amber: dvui.Color = .{ .r = 205, .g = 135, .b = 0 };
+    /// Oranžová: vzorky.
+    pub const orange: dvui.Color = .{ .r = 230, .g = 100, .b = 20 };
+    /// Zelená: značky nastavených frekvencí.
+    pub const green: dvui.Color = .{ .r = 40, .g = 150, .b = 60 };
+    /// Červená: Nyquistova frekvence, alias.
+    pub const red: dvui.Color = .{ .r = 210, .g = 40, .b = 40 };
+};
+
 /// Nápověda k ovládání grafů, stejná ve všech záložkách.
 pub const plot_help = "Grafy: tažením posun, kolečkem s Ctrl zvětšení, dvojklik obnoví zobrazení.";
 

@@ -47,11 +47,11 @@ const max_marked_points = 1025;
 const max_weak_level_db = 0.0;
 const min_weak_level_db = -120.0;
 
-const signal_color: dvui.Color = .{ .r = 150, .g = 150, .b = 150 };
-const window_color: dvui.Color = .{ .r = 230, .g = 180, .b = 60 };
-const windowed_color: dvui.Color = .{ .r = 90, .g = 170, .b = 255 };
-const rectangular_color: dvui.Color = .{ .r = 150, .g = 150, .b = 150 };
-const marker_color: dvui.Color = .{ .r = 120, .g = 200, .b = 120 };
+const signal_color = common.colors.gray;
+const window_color = common.colors.amber;
+const windowed_color = common.colors.blue;
+const rectangular_color = common.colors.gray;
+const marker_color = common.colors.green;
 
 /// Všechno, od čeho závisí výsledek výpočtu.
 const Settings = struct {

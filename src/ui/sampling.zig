@@ -43,11 +43,11 @@ const spectrum_max_hz = 250.0;
 /// puntíky u nuly (drobné prosakování u necelých period obdélníku apod.).
 const min_drawn_amplitude = 5e-3;
 
-const continuous_color: dvui.Color = .{ .r = 150, .g = 150, .b = 150 };
-const sample_color: dvui.Color = .{ .r = 240, .g = 150, .b = 50 };
-const reconstruction_color: dvui.Color = .{ .r = 90, .g = 170, .b = 255 };
-const nyquist_color: dvui.Color = .{ .r = 230, .g = 80, .b = 80 };
-const alias_color: dvui.Color = .{ .r = 230, .g = 80, .b = 80 };
+const continuous_color = common.colors.gray;
+const sample_color = common.colors.orange;
+const reconstruction_color = common.colors.blue;
+const nyquist_color = common.colors.red;
+const alias_color = common.colors.red;
 
 /// Všechno, od čeho závisí výsledek výpočtu.
 const Settings = struct {

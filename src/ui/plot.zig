@@ -139,11 +139,11 @@ pub const default_y_axis_width: f32 = 48;
 
 /// Výchozí barvy křivek, kterým nikdo barvu nepřidělil.
 const palette = [_]Color{
-    .{ .r = 90, .g = 170, .b = 255 },
-    .{ .r = 230, .g = 180, .b = 60 },
-    .{ .r = 120, .g = 200, .b = 120 },
-    .{ .r = 230, .g = 80, .b = 80 },
-    .{ .r = 180, .g = 130, .b = 230 },
+    .{ .r = 30, .g = 110, .b = 220 },
+    .{ .r = 205, .g = 135, .b = 0 },
+    .{ .r = 40, .g = 150, .b = 60 },
+    .{ .r = 210, .g = 40, .b = 40 },
+    .{ .r = 130, .g = 70, .b = 200 },
 };
 
 /// Okraj kolem automatického rozsahu (5 % na každé straně, jako egui_plot).

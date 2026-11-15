@@ -12,7 +12,7 @@ během přepisu.
 
 Přepsat šlo všechno: všechny čtyři záložky, všechny výpočty a všech 38 testů.
 Nic z Rust verze nezůstalo nepřepsané. Čísla v programu se shodují s Rust
-verzí i s čísly v učebnici. Odchylky jsou jen ve vzhledu: širší panel,
+verzí i s čísly v učebnici. Odchylky jsou jen ve vzhledu: světlý motiv, širší panel,
 větší písmo a ovládací prvky, posuvníky zaokrouhlují na setiny.
 
 Nejvíc práce navíc stálo uživatelské rozhraní. egui s egui_plot dávají
@@ -258,8 +258,11 @@ Pomocné alokace (body v pixelech, texty popisků) jdou do arény snímku
 Uvolňovat je tedy není potřeba, podobně jako v Rustu, kde se `Vec` uvolní
 sám.
 
-Tmavý motiv: barvy grafů v Rust verzi byly zvolené pro tmavé pozadí egui,
-proto i verze v Zigu používá tmavý motiv `adwaita_dark`.
+Motiv: Rust verze měla tmavý motiv egui. Verze v Zigu nejdřív převzala tmavý
+motiv `adwaita_dark`, na přání autora ale nakonec používá světlý
+`adwaita_light`. Barvy křivek jsou proto tmavší (`common.colors`), aby byly
+na bílém pozadí dobře vidět. Změna motivu v DVUI je jeden řádek, barvy
+grafu (mřížka, popisky, rámečky) se berou z motivu samy.
 
 ## Záložka „Signály a spektrum“ (`src/ui/spectrum.zig`, `src/ui/common.zig`)
 

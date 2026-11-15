@@ -124,9 +124,9 @@ const inter_fonts = [_]dvui.Font.Source{
 /// Velikost běžného textu v logických pixelech.
 const body_font_size = 13;
 
-/// Tmavý motiv DVUI (jako v Rust verzi) s písmem Inter.
+/// Světlý motiv DVUI s písmem Inter (Rust verze měla tmavý).
 fn theme() dvui.Theme {
-    var result = dvui.Theme.builtin.adwaita_dark;
+    var result = dvui.Theme.builtin.adwaita_light;
     result.embedded_fonts = &inter_fonts;
     result.font_body = .find(.{ .family = "Inter", .size = body_font_size });
     result.font_heading = .find(.{ .family = "Inter", .weight = .bold, .size = body_font_size });

@@ -50,10 +50,10 @@ const db_floor = -120.0;
 /// rozestup je na šířku sloupce moc velký, takže by se ukázala jen nula.
 const narrow_x_tick_spacing = 40;
 
-const input_color: dvui.Color = .{ .r = 150, .g = 150, .b = 150 };
-const output_color: dvui.Color = .{ .r = 90, .g = 170, .b = 255 };
-const response_color: dvui.Color = .{ .r = 230, .g = 180, .b = 60 };
-const marker_color: dvui.Color = .{ .r = 120, .g = 200, .b = 120 };
+const input_color = common.colors.gray;
+const output_color = common.colors.blue;
+const response_color = common.colors.amber;
+const marker_color = common.colors.green;
 
 /// Rodina filtru.
 const FilterFamily = enum { fir, iir };
