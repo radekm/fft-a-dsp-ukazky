@@ -124,6 +124,13 @@ pub fn text(src: std.builtin.SourceLocation, comptime format: []const u8, args: 
     layout.addText(message, .{});
 }
 
+/// Zalomený text v dané barvě (obdoba `ui.colored_label`).
+pub fn coloredText(src: std.builtin.SourceLocation, color: dvui.Color, message: []const u8) void {
+    var layout = dvui.textLayout(src, .{}, .{ .expand = .horizontal, .background = false, .padding = .{ .x = 2, .y = 1, .w = 2, .h = 1 } });
+    defer layout.deinit();
+    layout.addText(message, .{ .color_text = .{ .color = color } });
+}
+
 /// Krátký popisek na jednom řádku, např. před přepínači.
 pub fn inlineText(src: std.builtin.SourceLocation, message: []const u8) void {
     dvui.labelNoFmt(src, message, .{}, .{ .gravity_y = 0.5, .padding = .{ .x = 2, .y = 1, .w = 2, .h = 1 } });

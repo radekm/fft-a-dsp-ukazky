@@ -316,3 +316,23 @@ doplnění nulami mají popisky vytvořené už za překladu
 **Lepší – sdílené pomocné funkce grafu.** Widget grafu dostal body bez čar
 (`markers`) a jiný název osy v popisku u kurzoru (`hover_x_label`). Obojí
 egui_plot uměl, u vlastního widgetu se to doplní pár řádky.
+
+## Záložka „Vzorkování a aliasing“ (`src/ui/sampling.zig`)
+
+Výsledek odpovídá Rust verzi: výchozí 5 Hz při fs = 40 Hz, po nastavení
+35 Hz se složka jeví jako 5,000 Hz (alias, červeně), rekonstrukce je
+otočená sinusovka 5 Hz. Kód má 352 řádků (Rust 401).
+
+**Srovnatelné – iterátory a pole.** Rust verze skládala body grafů řetězci
+iterátorů (`map`, `filter`, `collect`). V Zigu jsou to obyčejné cykly do
+předem alokovaných polí. Kód je o něco delší, ale je z něj vidět, kolik
+paměti se alokuje. Filtrování (čáry spektra nad 250 Hz, slabé čáry) se
+dělá dvěma průchody: nejdřív se spočítá, kolik prvků zůstane, pak se pole
+naplní. Zkrácení pole po filtrování přes `allocator.realloc` je potřeba
+ošetřit, protože i zmenšení může selhat.
+
+**Lepší – bloky s návratovou hodnotou.** Mezivýsledky, které se hned
+uvolní (vstup a výstup DFT), jsou v bloku `blk: { ... break :blk výsledek; }`
+s vlastními `defer`. Paměť se uvolní hned na konci bloku a ve zbytku funkce
+mezivýsledky nepřekážejí. V Rustu se o to stará automatický `Drop`
+na konci bloku, v Zigu je to vidět přímo v kódu.

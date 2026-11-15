@@ -96,6 +96,9 @@ pub const Style = struct {
     radius: f32 = 2,
     /// Čárkovaná čára (jen u svislých čar).
     dashed: bool = false,
+    /// Délka čárky a mezery v logických pixelech (u čárkované čáry).
+    dash_length: f32 = 6,
+    gap_length: f32 = 6,
 };
 
 /// Nastavení grafu.
@@ -114,6 +117,8 @@ pub const Options = struct {
     /// Šířka sloupce s čísly na svislé ose. Stejná šířka u grafů pod sebou
     /// zajistí, že jsou zarovnané.
     y_axis_width: f32 = default_y_axis_width,
+    /// Hodnoty, které musí automatický rozsah osy x vždy obsahovat.
+    include_x: []const f64 = &.{},
     /// Hodnoty, které musí automatický rozsah osy y vždy obsahovat.
     include_y: []const f64 = &.{},
     /// Automatický rozsah osy x; když chybí, určí se z dat.
@@ -302,6 +307,7 @@ pub const Plot = struct {
             // Stonky začínají v nule, ta tedy musí být vidět.
             if (series.kind == .stems and series.points.len > 0) y_data = y_data.including(0);
         }
+        for (self.options.include_x) |value| x_data = x_data.including(value);
         for (self.options.include_y) |value| y_data = y_data.including(value);
 
         // U sdílené osy rozhoduje o automatickém rozsahu sdílený příznak,
@@ -648,8 +654,8 @@ fn drawSeries(transform: Transform, series: Series, scale: f32) void {
                 return;
             }
             // Čárkovaná čára: střídání čárek a mezer.
-            const dash = 6 * scale;
-            const gap = 6 * scale;
+            const dash = series.style.dash_length * scale;
+            const gap = series.style.gap_length * scale;
             var y = top;
             while (y < bottom) : (y += dash + gap) {
                 strokeLine(.{ .x = x, .y = y }, .{ .x = x, .y = @min(y + dash, bottom) }, thickness, series.color);
