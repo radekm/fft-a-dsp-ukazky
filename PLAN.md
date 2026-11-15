@@ -2,7 +2,7 @@
 
 ## Cíl
 
-Interaktivní desktopový program, na kterém si lze „osahat“ FFT a digitální
+Interaktivní desktopový program (a jeho webová verze), na kterém si lze „osahat“ FFT a digitální
 zpracování signálu (DSP): pohnu posuvníkem a hned vidím, co to udělá se
 signálem a jeho spektrem.
 
@@ -21,12 +21,14 @@ fáze 7. Rust verze je v `last-rust-version/` a slouží jako předloha.
 - Logování přes `std.log` na standardní výstup, hodnoty ve tvaru `klic=hodnota`.
 - Délka FFT je mocnina dvou (radix-2); kratší signál se doplní nulami.
 - SDL3 je systémová knihovna, linkuje se dynamicky.
+- Webová verze: tentýž kód přeložený do WebAssembly s webovým backendem DVUI.
 - Zkušenosti z přepisu se zapisují do `PREPIS-DO-ZIGU-Z-RUSTU.md`.
 
 ## Struktura (verze v Zigu)
 
 ```
 build.zig, build.zig.zon
+web/index.html     stránka webové verze (upravená z DVUI)
 src/
   main.zig         spuštění DVUI aplikace, logování, motiv a písmo
   app.zig          stav aplikace, přepínání záložek
@@ -143,6 +145,19 @@ Rust verze je předloha: stejné záložky, ovládání, výchozí hodnoty a č�
 - [x] Shrnutí v `PREPIS-DO-ZIGU-Z-RUSTU.md`.
 - [x] Na pokyn autora: aktualizace `README.md`, `docs/` a učebnice
       (odkazy na kód, nové snímky ve světlém motivu).
+
+### Fáze 8 – webová verze (WebAssembly)
+Tentýž program v prohlížeči. Desktopová verze se nemění.
+
+- [x] Povolení webového backendu DVUI v `AGENTS.md`.
+- [x] `zig build web` (sestaví `.wasm`, `web.js`, `index.html` do
+      `zig-out/web/`) a `zig build serve-web` (lokální HTTP server z DVUI).
+- [x] Logování do konzole prohlížeče (`dvui.App.logFn`), volba za překladu.
+- [x] Oprava kódu, který se pro `wasm32-freestanding` nepřeložil
+      (32bitový `usize`), a doby transformace (hodiny po 1 ms).
+- [x] Vyzkoušení všech záložek v prohlížeči a porovnání čísel s desktopem.
+- [x] `README.md` (sestavení a spuštění) a oddíl o webové verzi
+      v `PREPIS-DO-ZIGU-Z-RUSTU.md`.
 
 ## Možná později (mimo první verzi)
 
