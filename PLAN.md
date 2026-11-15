@@ -159,7 +159,8 @@ Tentýž program v prohlížeči. Desktopová verze se nemění.
 - [x] Vyzkoušení všech záložek v prohlížeči a porovnání čísel s desktopem.
 - [x] `README.md` (sestavení a spuštění) a oddíl o webové verzi
       v `PREPIS-DO-ZIGU-Z-RUSTU.md`.
-- [ ] Nasazení na GitHub Pages (workflow `.github/workflows/pages.yml`).
+- [x] Nasazení na GitHub Pages (workflow `.github/workflows/pages.yml`),
+      https://radekm.github.io/fft-a-dsp-ukazky/.
 
 ## Možná později (mimo první verzi)
 
