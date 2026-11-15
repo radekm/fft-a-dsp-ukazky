@@ -19,7 +19,11 @@ const log_level_variable = "LOG_LEVEL";
 const default_log_level: std.log.Level = .info;
 
 /// Úroveň logování platná za běhu. Nastaví se při startu z proměnné prostředí.
-var runtime_log_level: std.log.Level = default_log_level;
+/// Logovat můžou i vlákna DVUI a SDL, proto je hodnota atomická (souběžné
+/// čtení a zápis obyčejné proměnné by byl datový závod).
+/// Ukládá se jako číslo úrovně (`@backingInt`), atomické typy potřebují
+/// celočíselný typ s pevnou velikostí.
+var runtime_log_level: std.atomic.Value(u8) = .init(@backingInt(default_log_level));
 
 /// Zámek pro standardní výstup, aby se řádky logu z více vláken nepromíchaly.
 var stdout_mutex: std.Io.Mutex = .init;
@@ -53,7 +57,7 @@ fn logFn(
     args: anytype,
 ) void {
     // Nižší číslo = závažnější zpráva (err = 0, debug = 3).
-    if (@backingInt(level) > @backingInt(runtime_log_level)) return;
+    if (@backingInt(level) > runtime_log_level.load(.monotonic)) return;
 
     const io = std.Options.debug_io;
     // Zápis logu se nesmí přerušit uprostřed řádku.
@@ -88,7 +92,7 @@ fn logLevelFromEnvironment() std.log.Level {
 
 /// Spustí se jako první, ještě před otevřením okna.
 fn start() dvui.App.StartOptions {
-    runtime_log_level = logLevelFromEnvironment();
+    runtime_log_level.store(@backingInt(logLevelFromEnvironment()), .monotonic);
     log.info("application started version={s}", .{build_options.version});
 
     return .{

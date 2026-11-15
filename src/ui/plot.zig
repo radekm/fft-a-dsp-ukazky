@@ -74,6 +74,17 @@ pub const Range = struct {
     fn isEmpty(self: Range) bool {
         return !(self.min <= self.max);
     }
+
+    /// Dá se rozsah zobrazit? Musí být konečný a delší než miliardtina
+    /// největší hodnoty na ose, jinak by se body slily kvůli přesnosti f64
+    /// a výpočty dílků by ztratily smysl.
+    fn isUsable(self: Range) bool {
+        if (!std.math.isFinite(self.min) or !std.math.isFinite(self.max)) return false;
+        const length = self.span();
+        if (!std.math.isFinite(length) or !(length > 0)) return false;
+        const largest = @max(@abs(self.min), @abs(self.max));
+        return length > largest * 1e-9 and length < 1e15;
+    }
 };
 
 /// Osa x sdílená několika grafy pod sebou: posun nebo přiblížení v jednom
@@ -415,6 +426,16 @@ pub const Plot = struct {
             }
         }
 
+        // Posun nebo přiblížení, po kterém by osa nešla zobrazit (nulový či
+        // nekonečný rozsah), se zahodí a zůstane předchozí rozsah.
+        if (x_changed and !x_range.isUsable()) {
+            x_range.* = self.currentXRange(view.*);
+            x_changed = false;
+        }
+        if (y_changed and !y_range.isUsable()) {
+            y_range.* = view.y;
+            y_changed = false;
+        }
         if (x_changed or y_changed) {
             // Grafy propojené osou se už mohly v tomto snímku nakreslit
             // se starým rozsahem; další snímek je srovná.
@@ -690,8 +711,8 @@ fn drawGrid(transform: Transform, font: dvui.Font, scale: f32, text_color: Color
 
     // Svislé čáry a čísla osy x: dílek zhruba na každých `x_tick_spacing` pixelů.
     const x_ticks = Ticks.init(transform.x, rect.w / scale / x_tick_spacing);
-    var x_tick = x_ticks.firstMinor();
-    while (x_tick <= transform.x.max) : (x_tick += x_ticks.minor) {
+    for (x_ticks.first_index..x_ticks.end_index) |index| {
+        const x_tick = x_ticks.value(index);
         const px = transform.toScreen(.{ .x = x_tick, .y = 0 }).x;
         const major = x_ticks.isMajor(x_tick);
         const color = if (x_ticks.isZero(x_tick)) zero_color else if (major) major_color else minor_color;
@@ -705,8 +726,8 @@ fn drawGrid(transform: Transform, font: dvui.Font, scale: f32, text_color: Color
 
     // Vodorovné čáry a čísla osy y: dílek zhruba na každých 28 pixelů.
     const y_ticks = Ticks.init(transform.y, rect.h / scale / 28);
-    var y_tick = y_ticks.firstMinor();
-    while (y_tick <= transform.y.max) : (y_tick += y_ticks.minor) {
+    for (y_ticks.first_index..y_ticks.end_index) |index| {
+        const y_tick = y_ticks.value(index);
         const py = transform.toScreen(.{ .x = 0, .y = y_tick }).y;
         const major = y_ticks.isMajor(y_tick);
         const color = if (y_ticks.isZero(y_tick)) zero_color else if (major) major_color else minor_color;
@@ -720,16 +741,33 @@ fn drawGrid(transform: Transform, font: dvui.Font, scale: f32, text_color: Color
 }
 
 /// Dílky jedné osy: „hezký“ krok (1, 2 nebo 5 × 10ⁿ) a jemnější krok mřížky.
+///
+/// Dílky se číslují celými čísly: hodnota jemného dílku `i` je `i · minor`.
+/// Kdyby se hodnota počítala opakovaným přičítáním kroku, mohl by se cyklus
+/// u velmi malého kroku vůči hodnotám (krok menší než přesnost f64) zacyklit.
 const Ticks = struct {
     major: f64,
     minor: f64,
     /// Počet desetinných míst v číslech na ose.
     decimals: usize,
-    range: Range,
+    /// Rozsah indexů jemných dílků, které leží v rozsahu osy: [first, end).
+    /// Při neplatném rozsahu je prázdný.
+    first_index: usize = 0,
+    end_index: usize = 0,
+    /// Index jemného dílku s hodnotou `first_index · minor` je posunutý
+    /// o `index_offset`, aby indexy mohly být nezáporné.
+    index_offset: f64 = 0,
+
+    /// Nejvíc jemných dílků na jedné ose; víc by se stejně nedalo rozlišit.
+    const max_count = 1000;
+
+    const none: Ticks = .{ .major = 1, .minor = 1, .decimals = 0 };
 
     /// `target_count` je přibližný počet hlavních dílků, který se vejde.
     fn init(range: Range, target_count: f32) Ticks {
         const raw_step = range.span() / @max(1, target_count);
+        // Neplatný rozsah (nulový, záporný, nekonečný nebo NaN) nemá dílky.
+        if (!std.math.isFinite(raw_step) or !(raw_step > 0) or !std.math.isFinite(range.min)) return none;
         const magnitude = std.math.pow(f64, 10, @floor(@log10(raw_step)));
         const normalized = raw_step / magnitude;
         // Hlavní krok zaokrouhlíme nahoru na 1, 2 nebo 5 krát mocnina deseti
@@ -743,26 +781,47 @@ const Ticks = struct {
         else
             .{ 10, 5 };
         const major = base * magnitude;
-        const decimals: usize = if (major >= 1) 0 else @intFromFloat(@ceil(-@log10(major) - 1e-9));
-        return .{ .major = major, .minor = major / parts, .decimals = decimals, .range = range };
+        const minor = major / parts;
+        if (!(minor > 0) or !std.math.isFinite(minor)) return none;
+
+        // Desetinná místa: kolik jich potřebuje krok (0,5 → 1, 0,02 → 2).
+        // Hodnotu omezíme, aby převod na celé číslo dostal vždy rozumné číslo.
+        const needed = std.math.clamp(@ceil(-@log10(major) - 1e-9), 0, 20);
+        const decimals: usize = @intFromFloat(needed);
+
+        const first = @ceil(range.min / minor);
+        const last = @floor(range.max / minor);
+        const count = last - first + 1;
+        if (!std.math.isFinite(count) or count <= 0 or count > max_count) {
+            return .{ .major = major, .minor = minor, .decimals = decimals };
+        }
+        return .{
+            .major = major,
+            .minor = minor,
+            .decimals = decimals,
+            .first_index = 0,
+            .end_index = @intFromFloat(count),
+            .index_offset = first,
+        };
     }
 
-    fn firstMinor(self: Ticks) f64 {
-        return @ceil(self.range.min / self.minor) * self.minor;
+    /// Hodnota jemného dílku s indexem `index`.
+    fn value(self: Ticks, index: usize) f64 {
+        return (self.index_offset + @as(f64, @floatFromInt(index))) * self.minor;
     }
 
-    fn isMajor(self: Ticks, value: f64) bool {
-        const ratio = value / self.major;
+    fn isMajor(self: Ticks, tick: f64) bool {
+        const ratio = tick / self.major;
         return @abs(ratio - @round(ratio)) < 1e-6;
     }
 
-    fn isZero(self: Ticks, value: f64) bool {
-        return @abs(value) < self.minor * 1e-6;
+    fn isZero(self: Ticks, tick: f64) bool {
+        return @abs(tick) < self.minor * 1e-6;
     }
 
-    fn format(self: Ticks, buffer: []u8, value: f64) []const u8 {
+    fn format(self: Ticks, buffer: []u8, tick: f64) []const u8 {
         // Hodnota těsně kolem nuly by se vypsala jako „-0“.
-        const clean = if (self.isZero(value)) 0 else value;
+        const clean = if (self.isZero(tick)) 0 else tick;
         return std.fmt.bufPrint(buffer, "{[value]d:.[decimals]}", .{ .value = clean, .decimals = self.decimals }) catch "?";
     }
 };
@@ -872,4 +931,31 @@ test "ticks use nice steps" {
     const small = Ticks.init(.{ .min = -1.05, .max = 1.05 }, 5);
     try std.testing.expectEqual(0.5, small.major);
     try std.testing.expectEqual(1, small.decimals);
+}
+
+test "ticks of an unusable range are empty" {
+    const nan = std.math.nan(f64);
+    const inf = std.math.inf(f64);
+    try std.testing.expectEqual(0, Ticks.init(.{ .min = 5, .max = 5 }, 8).end_index);
+    try std.testing.expectEqual(0, Ticks.init(.{ .min = 0, .max = inf }, 8).end_index);
+    try std.testing.expectEqual(0, Ticks.init(.{ .min = nan, .max = 1 }, 8).end_index);
+    try std.testing.expectEqual(0, Ticks.init(.{ .min = 1, .max = 0 }, 8).end_index);
+    // Krok menší než přesnost f64 u hodnot kolem 500: dílky se nesmí zacyklit.
+    const tiny = Ticks.init(.{ .min = 500, .max = 500 + 1e-13 }, 8);
+    try std.testing.expect(tiny.end_index <= Ticks.max_count);
+}
+
+test "ticks are counted, not accumulated" {
+    const ticks = Ticks.init(.{ .min = -1.05, .max = 1.05 }, 5);
+    // Jemný krok 0,1: dílky −1,0 až 1,0, tedy 21 hodnot.
+    try std.testing.expectEqual(21, ticks.end_index);
+    try std.testing.expectApproxEqAbs(-1.0, ticks.value(0), 1e-12);
+    try std.testing.expectApproxEqAbs(1.0, ticks.value(20), 1e-12);
+}
+
+test "range usability" {
+    try std.testing.expect((Range{ .min = 0, .max = 1 }).isUsable());
+    try std.testing.expect(!(Range{ .min = 500, .max = 500 + 1e-10 }).isUsable());
+    try std.testing.expect(!(Range{ .min = 1, .max = 1 }).isUsable());
+    try std.testing.expect(!(Range{ .min = 0, .max = std.math.inf(f64) }).isUsable());
 }

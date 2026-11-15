@@ -165,6 +165,10 @@ pub const WindowProperties = struct {
 /// Změří vlastnosti okna z jeho spektra.
 pub fn analyzeWindow(coefficients: []const f64, response: WindowResponse) WindowProperties {
     const db = response.magnitude_db;
+    // Prázdné spektrum nemá laloky (a `db.len - 1` by podteklo).
+    if (db.len == 0 or coefficients.len == 0) {
+        return .{ .coherent_gain = 0, .main_lobe_half_width_bins = 0, .highest_side_lobe_db = -std.math.inf(f64) };
+    }
 
     // Hlavní lalok končí prvním místním minimem (nulou) spektra.
     var first_null = db.len - 1;

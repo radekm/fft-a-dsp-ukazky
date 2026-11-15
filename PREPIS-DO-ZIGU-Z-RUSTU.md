@@ -57,6 +57,7 @@ před verzí 1.0.
 | Dlouhé čáry v DVUI | horší | `strokeTriangles` v DVUI má index vrcholu napevno `u16` (chyba DVUI, volba `vertex-index` nepomůže): čára s 16 000 body shodila program, kreslí se po úsecích |
 | Stabilita jazyka | horší | API standardní knihovny a build systému se mezi verzemi Zigu mění |
 | Bezpečnostní kontroly | lepší | v Debug/ReleaseSafe Zig okamžitě a přesně ukázal přetečení uvnitř DVUI |
+| Nedefinované chování | horší i lepší | v ReleaseFast je UB to, co Rust ohlídá vždy; Debug/ReleaseSafe ho ale spolehlivě zachytí |
 | Výsledná čísla | stejné | všechny testy i čísla v učebnici souhlasí |
 
 ## Sestavení a závislosti
@@ -428,3 +429,42 @@ i v programu:
   teď mají při najetí myší přednost před lomenou čárou.
 - Frekvence složek se v políčku ukazují bez nul na konci („300“ místo
   „300.00“), jinak by se delší čísla do políčka nevešla.
+
+## Kontrola nedefinovaného chování
+
+V Zigu je řada chyb (přetečení celého čísla, převod NaN nebo nekonečna
+na celé číslo `@intFromFloat`, nesplněný `assert`, index mimo pole)
+v režimech Debug a ReleaseSafe zachycená a program spadne s přesným
+hlášením. V ReleaseFast a ReleaseSmall jde ale o **nedefinované chování**.
+Rust tyto chyby (kromě přetečení v release) kontroluje vždy. Proto jsme
+kód prošli a krajní případy vyzkoušeli v programu. Našly se tyto chyby:
+
+- **Filtry, pásmová propust:** při dolní mezi 499 Hz (maximum posuvníku)
+  volal kód `std.math.clamp(horní, dolní + 1, 499)`, tedy s dolní hranicí
+  nad horní. `clamp` to hlídá přes `assert` a program v Debug spadl.
+  Rust verze měla stejnou chybu (`f64::clamp` při `min > max` panikuje).
+  Oprava: dolní mez se nejdřív omezí na 498 Hz.
+- **Graf, silné přiblížení:** po mnoha otočeních kolečkem s Ctrl se rozsah
+  osy zmenšil pod přesnost `f64`. Dílky osy se počítaly přičítáním kroku
+  (`x += krok`), a když byl krok menší než přesnost čísla, cyklus se
+  zacyklil a program zamrzl. Při nulovém rozsahu by navíc
+  `@intFromFloat(inf)` byl nedefinovaný. Oprava: dílky se počítají z
+  celočíselného indexu (`i · krok`) s horní mezí počtu, neplatný rozsah
+  nemá dílky a přiblížení nebo posun, po kterém by osa nešla zobrazit, se
+  zahodí. Přidány testy krajních případů.
+- **Úroveň logování:** globální proměnnou čte každé volání logu, i z vláken
+  DVUI a SDL. Souběžný zápis a čtení obyčejné proměnné je datový závod,
+  proto je teď atomická (`std.atomic.Value`).
+- **`analyzeWindow`:** u prázdného spektra by `db.len - 1` podteklo;
+  ošetřeno, i když to program nikdy nevolá.
+
+Ostatní místa jsou v pořádku: převody `@intCast` a `@intFromFloat` dostávají
+hodnoty z ověřených rozsahů (políčko s číslem přijme jen hodnotu mezi
+minimem a maximem posuvníku, do políčka nejde napsat „nan“ ani „inf“),
+`undefined` se vždy přepíše dřív, než se čte, a ukazatele do arény snímku
+se používají jen v rámci snímku.
+
+Zajímavost: `zig fmt` v Zigu 0.17 sám přepisuje zastaralé `@intFromEnum`
+na novější `@backingInt`. Formátovač tedy mění i význam kódu, nejen
+mezery, a jedno místo tím rozbil (dvě různé úpravy se potkaly na jednom
+řádku). Další drobný příklad nestability jazyka před verzí 1.0.

@@ -418,10 +418,12 @@ fn showFrequencyControls(settings: *Settings) void {
 
     if (settings.isFirBand()) {
         frequencySlider(@src(), &settings.upper_frequency_hz, "horní mez");
-        // Horní mez musí ležet nad dolní.
+        // Horní mez musí ležet aspoň o `min_band_width_hz` nad dolní. Dolní mez
+        // proto nesmí být výš než `max_frequency_hz − min_band_width_hz`, jinak by
+        // `clamp` dostal dolní hranici nad horní (to je v Zigu chyba programu).
+        settings.frequency_hz = @min(settings.frequency_hz, max_frequency_hz - min_band_width_hz);
         const lowest_upper = settings.frequency_hz + min_band_width_hz;
         settings.upper_frequency_hz = std.math.clamp(settings.upper_frequency_hz, lowest_upper, max_frequency_hz);
-        settings.frequency_hz = @min(settings.frequency_hz, settings.upper_frequency_hz - min_band_width_hz);
     }
 }
 
