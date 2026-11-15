@@ -489,22 +489,28 @@ pub const Plot = struct {
 
         dvui.cursorSet(.crosshair);
 
-        // Nejbližší bod některé křivky.
+        // Nejbližší bod některé křivky. Samostatné body (stonky, puntíky) mají
+        // přednost před lomenými čarami: míří se na ně záměrně a hustá čára
+        // pod nimi (např. spojitý signál pod vzorky) by je jinak přebila.
         var nearest: ?struct { series: *const Series, point: Point } = null;
-        var nearest_distance = hover_radius * scale;
-        for (self.series.items) |*series| {
-            if (series.kind == .vertical_line) continue;
-            for (series.points) |point| {
-                if (!std.math.isFinite(point.x) or !std.math.isFinite(point.y)) continue;
-                const screen = transform.toScreen(point);
-                const distance = std.math.hypot(screen.x - mouse.x, screen.y - mouse.y);
-                // Při stejné vzdálenosti vyhraje později přidaná křivka, protože
-                // je nakreslená navrchu (např. vzorky přes spojitý signál).
-                if (distance <= nearest_distance) {
-                    nearest_distance = distance;
-                    nearest = .{ .series = series, .point = point };
+        for ([_]bool{ true, false }) |discrete_pass| {
+            var nearest_distance = hover_radius * scale;
+            for (self.series.items) |*series| {
+                if (series.kind == .vertical_line) continue;
+                if ((series.kind != .line) != discrete_pass) continue;
+                for (series.points) |point| {
+                    if (!std.math.isFinite(point.x) or !std.math.isFinite(point.y)) continue;
+                    const screen = transform.toScreen(point);
+                    const distance = std.math.hypot(screen.x - mouse.x, screen.y - mouse.y);
+                    // Při stejné vzdálenosti vyhraje později přidaná křivka,
+                    // protože je nakreslená navrchu.
+                    if (distance <= nearest_distance) {
+                        nearest_distance = distance;
+                        nearest = .{ .series = series, .point = point };
+                    }
                 }
             }
+            if (nearest != null) break;
         }
 
         const crosshair_color = theme.text.opacity(0.35);
