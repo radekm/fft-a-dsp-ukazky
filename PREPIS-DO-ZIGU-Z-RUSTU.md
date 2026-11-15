@@ -331,9 +331,11 @@ typem `u16`, takže víc než 65 535 vrcholů (na bod čáry jich připadá
 několik) skončí přetečením celého čísla. V režimu Debug to Zig zachytí
 a program spadne s hlášením „integer overflow“ a přesným místem. Bez
 kontrol (ReleaseFast) by šlo o nedefinované chování. egui se s tím
-nepotýkalo. Typ indexu jde v DVUI změnit volbou `vertex-index`, ale volby
-DVUI podle pravidel neměníme. Widget grafu proto kreslí dlouhé čáry po
-úsecích nejvýš 2 000 bodů. Pozitivní je, že bezpečnostní kontroly Zigu
+nepotýkalo. Zkusili jsme přepnout DVUI volbou `vertex-index` na
+32bitové indexy, ale nepomohlo to: funkce `strokeTriangles` v DVUI
+(`src/Path.zig`) má index vrcholu napevno jako `u16` a volbu ignoruje.
+Widget grafu proto kreslí dlouhé čáry po úsecích nejvýš 2 000 bodů
+a DVUI zůstává s výchozími 16bitovými indexy. Pozitivní je, že bezpečnostní kontroly Zigu
 chybu ukázaly okamžitě a přesně.
 
 **Horší – zakázané ovládací prvky.** V Rust verzi byly posuvníky slabé
