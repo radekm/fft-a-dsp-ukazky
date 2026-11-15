@@ -464,6 +464,44 @@ minimem a maximem posuvníku, do políčka nejde napsat „nan“ ani „inf“)
 `undefined` se vždy přepíše dřív, než se čte, a ukazatele do arény snímku
 se používají jen v rámci snímku.
 
+### Druhá, podrobnější kontrola vestavěných funkcí (`@…`)
+
+Prošli jsme každé volání vestavěné funkce a porovnali ho s dokumentací
+jazyka pro Zig 0.17.1 (`doc/langref.html` u překladače). Nedefinované
+chování (v řeči Zigu „safety-checked Illegal Behavior“) hrozí jen u:
+
+| Funkce | Kdy je to chyba | Stav v našem kódu |
+|---|---|---|
+| `@intCast` | hodnota se nevejde do cílového typu | jen indexy z rozbalovacích seznamů, `@ctz` mocniny dvou a doba výpočtu v ns – vždy v rozsahu |
+| `@intFromFloat` | NaN nebo hodnota mimo rozsah (v 0.17 je zastaralé, odpovídá `@trunc`) | počet desetinných míst (omezen na 0–20), počet dílků (1–1000), `k` filtru (1–200), počet vzorků (fs 1–200) |
+| `@round`, `@floor`, `@ceil`, `@trunc` | totéž, **pokud je odvozený typ výsledku celé číslo** – v 0.17 tak tyto funkce převádějí na celé číslo | všude s výsledkem `f64`, převod vždy výslovně přes `@intFromFloat` |
+| `@mod` | nulový dělitel | čárkování čáry – nově ošetřený nulový vzor |
+| `@memcpy` | různé délky nebo překryv | `zeroPad` – stejné délky, nově alokovaná paměť |
+| `@tagName` | neplatná hodnota neúplného výčtu | jen úplné výčty |
+
+Bezpečné vždy jsou `@floatFromInt`, `@floatCast` (jen ztráta přesnosti,
+mimo rozsah dá nekonečno), `@abs`, `@max`/`@min` (NaN ignorují),
+`@sin`, `@cos`, `@log`, `@sqrt`, `@exp` (u neplatného vstupu vrátí NaN),
+`@memset`, `@splat`, `@backingInt`, `@ctz` (pro nulu vrátí šířku typu).
+
+Kontrola ale odhalila další chybu, tentokrát v okolí `@mod`: čárkovaná
+lomená čára (zesílení filtru ve spektru) se při silném přiblížení
+**zasekla**. Jeden úsek čáry měl na obrazovce stovky milionů pixelů,
+čárkovalo se tedy obrovské množství čárek, a protože pozice byla v `f32`,
+krok 6 px se k ní od jisté velikosti vůbec nepřičetl a cyklus neskončil.
+Oprava: každý úsek lomené čáry se nejdřív ořízne na kreslicí plochu
+(algoritmus Liang–Barsky v `f64`) a kreslí se jen viditelná část. Body,
+stonky a svislé čáry mimo plochu se přeskočí. Rozsah osy má navíc
+absolutní dolní mez 10⁻¹², aby souřadnice vzdálených bodů nemohly přetéct
+do nekonečna, a ořezání odmítne nekonečno i NaN. Podmínky „je mimo plochu“
+jsou psané jako `!(x >= a and x <= b)`, protože `x < a or x > b` by NaN
+pustilo dál.
+
+Ponaučení: nedefinované chování v Zigu se neschovává jen v ukazatelích.
+Hlavní riziko u tohoto programu byly převody desetinných čísel na celá
+a cykly řízené desetinnými čísly. U obojího je potřeba myslet na NaN,
+nekonečno a omezenou přesnost.
+
 Zajímavost: `zig fmt` v Zigu 0.17 sám přepisuje zastaralé `@intFromEnum`
 na novější `@backingInt`. Formátovač tedy mění i význam kódu, nejen
 mezery, a jedno místo tím rozbil (dvě různé úpravy se potkaly na jednom

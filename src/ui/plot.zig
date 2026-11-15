@@ -75,15 +75,17 @@ pub const Range = struct {
         return !(self.min <= self.max);
     }
 
-    /// Dá se rozsah zobrazit? Musí být konečný a delší než miliardtina
-    /// největší hodnoty na ose, jinak by se body slily kvůli přesnosti f64
+    /// Dá se rozsah zobrazit? Musí být konečný, delší než 10⁻¹² a delší než
+    /// miliardtina největší hodnoty na ose, jinak by se body slily kvůli přesnosti f64
     /// a výpočty dílků by ztratily smysl.
     fn isUsable(self: Range) bool {
         if (!std.math.isFinite(self.min) or !std.math.isFinite(self.max)) return false;
         const length = self.span();
         if (!std.math.isFinite(length) or !(length > 0)) return false;
         const largest = @max(@abs(self.min), @abs(self.max));
-        return length > largest * 1e-9 and length < 1e15;
+        // Absolutní dolní mez zajistí, že ani vzdálené body nepřetečou při
+        // převodu na pixely do nekonečna.
+        return length > largest * 1e-9 and length > 1e-12 and length < 1e15;
     }
 };
 
@@ -628,6 +630,16 @@ const Transform = struct {
         };
     }
 
+    /// Totéž co `toScreen`, ale v f64 (pro oříznutí čar, viz `clipSegment`).
+    fn toScreen64(self: Transform, point: Point) ScreenPoint {
+        const fx = (point.x - self.x.min) / self.x.span();
+        const fy = (point.y - self.y.min) / self.y.span();
+        return .{
+            .x = @as(f64, self.rect.x) + fx * self.rect.w,
+            .y = @as(f64, self.rect.y + self.rect.h) - fy * self.rect.h,
+        };
+    }
+
     fn toData(self: Transform, screen: PhysicalPoint) Point {
         const fx: f64 = (screen.x - self.rect.x) / self.rect.w;
         const fy: f64 = (self.rect.y + self.rect.h - screen.y) / self.rect.h;
@@ -640,49 +652,71 @@ fn drawSeries(transform: Transform, series: Series, scale: f32) void {
     const thickness = series.style.width * scale;
     switch (series.kind) {
         .line => {
+            // Úseky čáry nejdřív ořízneme na kreslicí plochu (v f64). Při silném
+            // přiblížení by jinak úsek mohl mít na obrazovce stovky milionů
+            // pixelů: čárkování by trvalo nekonečně dlouho a souřadnice v f32
+            // by ztratily přesnost. Viditelné kousky na sebe navazující tvoří
+            // jeden tah (`run`); kde čára z plochy odejde, tah skončí.
             const arena = dvui.currentWindow().arena();
-            const screen_points = arena.alloc(PhysicalPoint, series.points.len) catch return;
-            var count: usize = 0;
+            var run: std.ArrayList(PhysicalPoint) = .empty;
+            const visible = transform.rect.insetAll(-(thickness + 2));
+            var previous: ?Point = null;
             for (series.points) |point| {
-                if (!std.math.isFinite(point.x) or !std.math.isFinite(point.y)) continue;
-                screen_points[count] = transform.toScreen(point);
-                count += 1;
+                if (!std.math.isFinite(point.x) or !std.math.isFinite(point.y)) {
+                    strokeRun(run.items, series, scale);
+                    run.clearRetainingCapacity();
+                    previous = null;
+                    continue;
+                }
+                defer previous = point;
+                const from_point = previous orelse continue;
+                const clipped = clipSegment(transform.toScreen64(from_point), transform.toScreen64(point), visible) orelse {
+                    strokeRun(run.items, series, scale);
+                    run.clearRetainingCapacity();
+                    continue;
+                };
+                if (clipped.start_clipped or run.items.len == 0) {
+                    strokeRun(run.items, series, scale);
+                    run.clearRetainingCapacity();
+                    run.append(arena, clipped.from) catch return;
+                }
+                run.append(arena, clipped.to) catch return;
+                if (clipped.end_clipped) {
+                    strokeRun(run.items, series, scale);
+                    run.clearRetainingCapacity();
+                }
             }
-            // DVUI čísluje vrcholy jednoho tahu typem u16 (nejvýš 65 535
-            // vrcholů, na bod čáry jich padne několik). Dlouhou čáru proto
-            // kreslíme po úsecích; sousední úseky sdílejí jeden bod, aby
-            // čára nebyla přerušená.
-            if (series.style.dashed) {
-                strokeDashed(screen_points[0..count], series.style, scale, series.color);
-                return;
-            }
-            var start: usize = 0;
-            while (start + 1 < count) {
-                const end = @min(start + max_points_per_stroke, count);
-                dvui.Path.stroke(.{ .points = screen_points[start..end] }, .{
-                    .thickness = thickness,
-                    .color = .{ .color = series.color },
-                });
-                start = end - 1;
-            }
+            strokeRun(run.items, series, scale);
         },
         .stems => {
-            const zero_y = transform.toScreen(.{ .x = 0, .y = 0 }).y;
+            // Body mimo plochu nekreslíme a svislé čáry omezíme na plochu
+            // (jsou svislé, takže oříznutí y je přesné).
+            const margin = series.style.radius * scale + 2;
+            const rect = transform.rect;
+            const zero_y = std.math.clamp(transform.toScreen(.{ .x = 0, .y = 0 }).y, rect.y - margin, rect.y + rect.h + margin);
             for (series.points) |point| {
                 if (!std.math.isFinite(point.x) or !std.math.isFinite(point.y)) continue;
-                const top = transform.toScreen(point);
+                const screen = transform.toScreen(point);
+                // Zápis „není uvnitř“ odmítne i NaN (porovnání s NaN je nepravdivé).
+                if (!(screen.x >= rect.x - margin and screen.x <= rect.x + rect.w + margin)) continue;
+                const top: PhysicalPoint = .{ .x = screen.x, .y = std.math.clamp(screen.y, rect.y - margin, rect.y + rect.h + margin) };
                 strokeLine(.{ .x = top.x, .y = zero_y }, top, thickness * 0.7, series.color);
+                if (top.y != screen.y) continue;
                 fillCircle(top, series.style.radius * scale, series.color);
             }
         },
         .markers => {
+            const visible = transform.rect.insetAll(-(series.style.radius * scale + 2));
             for (series.points) |point| {
                 if (!std.math.isFinite(point.x) or !std.math.isFinite(point.y)) continue;
-                fillCircle(transform.toScreen(point), series.style.radius * scale, series.color);
+                const screen = transform.toScreen(point);
+                if (!visible.contains(screen)) continue;
+                fillCircle(screen, series.style.radius * scale, series.color);
             }
         },
         .vertical_line => {
             const x = transform.toScreen(.{ .x = series.x, .y = 0 }).x;
+            if (!(x >= transform.rect.x - thickness and x <= transform.rect.x + transform.rect.w + thickness)) return;
             const top = transform.rect.y;
             const bottom = transform.rect.y + transform.rect.h;
             if (!series.style.dashed) {
@@ -692,6 +726,11 @@ fn drawSeries(transform: Transform, series: Series, scale: f32) void {
             // Čárkovaná čára: střídání čárek a mezer.
             const dash = series.style.dash_length * scale;
             const gap = series.style.gap_length * scale;
+            // Bez délky vzoru by cyklus neskončil; kreslíme pak plnou čáru.
+            if (!(dash > 0 and gap >= 0)) {
+                strokeLine(.{ .x = x, .y = top }, .{ .x = x, .y = bottom }, thickness, series.color);
+                return;
+            }
             var y = top;
             while (y < bottom) : (y += dash + gap) {
                 strokeLine(.{ .x = x, .y = y }, .{ .x = x, .y = @min(y + dash, bottom) }, thickness, series.color);
@@ -875,10 +914,96 @@ fn drawText(font: dvui.Font, text: []const u8, top_left: PhysicalPoint, scale: f
 
 /// Čárkovaná lomená čára: podél čáry se střídají čárky a mezery, vzor
 /// navazuje přes zlomy čáry.
+/// Nakreslí jeden souvislý tah lomené čáry (plnou nebo čárkovanou).
+fn strokeRun(points: []const PhysicalPoint, series: Series, scale: f32) void {
+    if (points.len < 2) return;
+    if (series.style.dashed) {
+        strokeDashed(points, series.style, scale, series.color);
+        return;
+    }
+    // DVUI čísluje vrcholy jednoho tahu typem u16 (nejvýš 65 535 vrcholů,
+    // na bod čáry jich padne několik). Dlouhou čáru proto kreslíme po
+    // úsecích; sousední úseky sdílejí jeden bod, aby čára nebyla přerušená.
+    var start: usize = 0;
+    while (start + 1 < points.len) {
+        const end = @min(start + max_points_per_stroke, points.len);
+        dvui.Path.stroke(.{ .points = points[start..end] }, .{
+            .thickness = series.style.width * scale,
+            .color = .{ .color = series.color },
+        });
+        start = end - 1;
+    }
+}
+
+/// Bod obrazovky s přesností f64 (před oříznutím).
+const ScreenPoint = struct { x: f64, y: f64 };
+
+/// Viditelná část úseku po oříznutí na obdélník.
+const ClippedSegment = struct {
+    from: PhysicalPoint,
+    to: PhysicalPoint,
+    /// Začátek, resp. konec úseku byl odříznut (úsek tam z plochy vychází).
+    start_clipped: bool,
+    end_clipped: bool,
+};
+
+/// Ořízne úsek na obdélník (algoritmus Liang–Barsky). Počítá v f64, aby
+/// i velmi vzdálené body (silné přiblížení) daly přesný výsledek.
+/// Vrátí null, když úsek obdélníkem neprochází.
+fn clipSegment(from: ScreenPoint, to: ScreenPoint, rect: PhysicalRect) ?ClippedSegment {
+    // Nekonečno nebo NaN by výpočet níže rozbily (porovnání s NaN jsou vždy
+    // nepravdivá); takový úsek nekreslíme.
+    for ([_]f64{ from.x, from.y, to.x, to.y }) |coordinate| {
+        if (!std.math.isFinite(coordinate)) return null;
+    }
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    var t0: f64 = 0;
+    var t1: f64 = 1;
+    // Pro každou ze čtyř hran: p · t ≤ q musí platit uvnitř obdélníku.
+    const ps = [4]f64{ -dx, dx, -dy, dy };
+    const qs = [4]f64{
+        from.x - rect.x,
+        @as(f64, rect.x + rect.w) - from.x,
+        from.y - rect.y,
+        @as(f64, rect.y + rect.h) - from.y,
+    };
+    for (ps, qs) |p, q| {
+        if (p == 0) {
+            // Úsek je rovnoběžný s hranou; leží-li vně, není vidět vůbec.
+            if (q < 0) return null;
+            continue;
+        }
+        const t = q / p;
+        if (p < 0) {
+            if (t > t1) return null;
+            t0 = @max(t0, t);
+        } else {
+            if (t < t0) return null;
+            t1 = @min(t1, t);
+        }
+    }
+    if (!(t0 <= t1)) return null;
+    return .{
+        .from = .{ .x = @floatCast(from.x + dx * t0), .y = @floatCast(from.y + dy * t0) },
+        .to = .{ .x = @floatCast(from.x + dx * t1), .y = @floatCast(from.y + dy * t1) },
+        .start_clipped = t0 > 0,
+        .end_clipped = t1 < 1,
+    };
+}
+
+/// Body musí ležet na kreslicí ploše (viz oříznutí v `drawSeries`), takže
+/// délka čáry a tím i počet čárek je omezený velikostí grafu.
 fn strokeDashed(points: []const PhysicalPoint, style: Style, scale: f32, color: Color) void {
     const dash = style.dash_length * scale;
     const gap = style.gap_length * scale;
     const thickness = style.width * scale;
+    if (points.len < 2) return;
+    // `@mod` potřebuje kladného dělitele a cyklus kladnou čárku.
+    if (!(dash > 0 and gap >= 0)) {
+        dvui.Path.stroke(.{ .points = points }, .{ .thickness = thickness, .color = .{ .color = color } });
+        return;
+    }
     // Kde ve vzoru „čárka + mezera“ právě jsme (0 až dash + gap).
     var phase: f32 = 0;
     for (points[0 .. points.len - 1], points[1..]) |from, to| {
@@ -958,4 +1083,26 @@ test "range usability" {
     try std.testing.expect(!(Range{ .min = 500, .max = 500 + 1e-10 }).isUsable());
     try std.testing.expect(!(Range{ .min = 1, .max = 1 }).isUsable());
     try std.testing.expect(!(Range{ .min = 0, .max = std.math.inf(f64) }).isUsable());
+}
+
+test "clip segment to rectangle" {
+    const rect: PhysicalRect = .{ .x = 0, .y = 0, .w = 100, .h = 50 };
+    // Celý uvnitř: beze změny.
+    const inside = clipSegment(.{ .x = 10, .y = 10 }, .{ .x = 90, .y = 40 }, rect).?;
+    try std.testing.expect(!inside.start_clipped and !inside.end_clipped);
+    try std.testing.expectEqual(@as(f32, 90), inside.to.x);
+    // Obrovsky dlouhý vodorovný úsek (silné přiblížení) se ořízne na šířku plochy.
+    const long = clipSegment(.{ .x = -1e12, .y = 25 }, .{ .x = 1e12, .y = 25 }, rect).?;
+    try std.testing.expect(long.start_clipped and long.end_clipped);
+    try std.testing.expectApproxEqAbs(@as(f32, 0), long.from.x, 1e-3);
+    try std.testing.expectApproxEqAbs(@as(f32, 100), long.to.x, 1e-3);
+    // Úsek celý vně není vidět.
+    try std.testing.expectEqual(null, clipSegment(.{ .x = -10, .y = 60 }, .{ .x = 200, .y = 70 }, rect));
+}
+
+test "clip segment rejects non-finite points" {
+    const rect: PhysicalRect = .{ .x = 0, .y = 0, .w = 100, .h = 50 };
+    const inf = std.math.inf(f64);
+    try std.testing.expectEqual(null, clipSegment(.{ .x = 10, .y = 10 }, .{ .x = inf, .y = 10 }, rect));
+    try std.testing.expectEqual(null, clipSegment(.{ .x = std.math.nan(f64), .y = 10 }, .{ .x = 20, .y = 10 }, rect));
 }
