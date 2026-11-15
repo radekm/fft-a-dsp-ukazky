@@ -62,10 +62,110 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Run the program");
     run_step.dependOn(&run_cmd.step);
 
+    addWebSteps(b, optimize, build_options);
+
     // Testy DSP běží bez DVUI a bez okna, testy UI potřebují přeložit DVUI.
     const dsp_tests = b.addTest(.{ .root_module = dsp_mod });
     const ui_tests = b.addTest(.{ .root_module = exe_mod });
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&b.addRunArtifact(dsp_tests).step);
     test_step.dependOn(&b.addRunArtifact(ui_tests).step);
+}
+
+/// Webová verze: stejný program přeložený do WebAssembly (`wasm32-freestanding`)
+/// s webovým backendem DVUI. Kreslí do `<canvas>` přes WebGL a události
+/// z prohlížeče předává `web.js` z DVUI.
+///
+/// - `zig build web` nainstaluje do `zig-out/web/` soubory `index.html`,
+///   `web.js` a `fft-dsp-demos.wasm`; servírovat je musí HTTP server.
+/// - `zig build serve-web` je servíruje malým serverem z DVUI
+///   na http://localhost:8080.
+///
+/// SDL3 (ani AppKit) se webu netýká, ten má vlastní backend.
+fn addWebSteps(
+    b: *std.Build,
+    optimize: std.lang.Optimize,
+    build_options: *std.Build.Step.Options,
+) void {
+    const wasm_target = b.resolveTargetQuery(.{
+        .cpu_arch = .wasm32,
+        .os_tag = .freestanding,
+    });
+
+    // Druhá instance DVUI, tentokrát s webovým backendem a cílem wasm32.
+    // Volby pro desktop (výše) zůstávají beze změny.
+    const dvui_web_dep = b.dependency("dvui", .{
+        .target = wasm_target,
+        .optimize = optimize,
+        .backend = .web,
+        .@"tree-sitter" = false,
+    });
+
+    const dsp_mod = b.createModule(.{
+        .root_source_file = b.path("src/dsp/dsp.zig"),
+        .target = wasm_target,
+        .optimize = optimize,
+    });
+
+    const web_mod = b.createModule(.{
+        .root_source_file = b.path("src/main.zig"),
+        .target = wasm_target,
+        .optimize = optimize,
+        // V prohlížeči není libc ani vlákna.
+        .link_libc = false,
+        .single_threaded = true,
+        // Release verze bez ladicích informací je několikanásobně menší.
+        .strip = optimize == .small or optimize == .fast,
+    });
+    web_mod.addImport("dvui", dvui_web_dep.module("dvui_web"));
+    web_mod.addImport("dsp", dsp_mod);
+    web_mod.addOptions("build_options", build_options);
+
+    const wasm = b.addExecutable(.{
+        .name = "fft-dsp-demos",
+        .root_module = web_mod,
+    });
+    // Program nemá vstupní bod `_start`; funkce, které volá `web.js`
+    // (`dvui_init`, `dvui_update`…), exportuje modul backendu z DVUI.
+    wasm.entry = .disabled;
+
+    const install_dir: std.Build.InstallDir = .{ .custom = "web" };
+    const web_js = dvui_web_dep.namedLazyPath("web.js");
+
+    // Do `index.html` se místo zástupného textu doplní otisk (SHA-256) souborů
+    // `web.js` a `.wasm`. Prohlížeč pak po novém sestavení nepoužije starou
+    // verzi z mezipaměti. Nástroj je součástí DVUI.
+    const cache_buster = b.addExecutable(.{
+        .name = "cacheBuster",
+        .root_module = b.createModule(.{
+            .root_source_file = dvui_web_dep.path("src/cacheBuster.zig"),
+            .target = b.graph.host,
+        }),
+    });
+    const cache_buster_run = b.addRunArtifact(cache_buster);
+    cache_buster_run.addFileArg(b.path("web/index.html"));
+    cache_buster_run.addFileArg(web_js);
+    cache_buster_run.addFileArg(wasm.getEmittedBin());
+    const index_html = cache_buster_run.captureStdOut(.{ .basename = "index.html" });
+
+    const web_step = b.step("web", "Build the web (WebAssembly) version into zig-out/web");
+    web_step.dependOn(&b.addInstallArtifact(wasm, .{ .dest_dir = .{ .override = install_dir } }).step);
+    web_step.dependOn(&b.addInstallFileWithDir(web_js, install_dir, "web.js").step);
+    web_step.dependOn(&b.addInstallFileWithDir(index_html, install_dir, "index.html").step);
+
+    // Malý HTTP server z DVUI; servíruje právě tyto tři soubory na portu 8080.
+    const server = b.addExecutable(.{
+        .name = "serve-web",
+        .root_module = b.createModule(.{
+            .root_source_file = dvui_web_dep.path("tools/serve_web_demo.zig"),
+            .target = b.graph.host,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    const serve_run = b.addRunArtifact(server);
+    serve_run.addFileArg(index_html);
+    serve_run.addFileArg(web_js);
+    serve_run.addArtifactArg(wasm);
+    const serve_step = b.step("serve-web", "Serve the web version at http://localhost:8080");
+    serve_step.dependOn(&serve_run.step);
 }

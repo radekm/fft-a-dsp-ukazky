@@ -9,5 +9,5 @@
             .hash = "dvui-0.6.0-dev-AQFJmbu5BAF4Li_HMImGyz72tPfF-xJctE49VKzsvpia",
         },
     },
-    .paths = .{ "build.zig", "build.zig.zon", "src" },
+    .paths = .{ "build.zig", "build.zig.zon", "src", "web" },
 }
