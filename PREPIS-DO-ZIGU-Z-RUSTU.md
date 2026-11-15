@@ -16,6 +16,8 @@ během přepisu.
 | Písmo s českými znaky | horší | výchozí písmo DVUI nemá ř, ť, ň, ů, ě, ď; řešeno vloženým písmem Inter |
 | Pozadí okna | horší (drobnost) | DVUI okno nevyplní, bez vlastního pozadí je černé |
 | Logování | horší | `std.log` nemá pojmenovaná pole jako `tracing` |
+| Oddělení DSP od UI | lepší | DSP je samostatný modul bez přístupu k DVUI, hlídá to překladač |
+| Stabilita jazyka | horší | API standardní knihovny a build systému se mezi verzemi Zigu mění |
 
 ## Sestavení a závislosti
 
@@ -75,3 +77,39 @@ souboru i na terminál. `std.log` v Zigu má jen zprávu s formátovacím řetě
 Pojmenovaná pole se dají napodobit textem `klic=hodnota` ve zprávě, ale log
 není strojově čitelný jako JSON. Úroveň a rozsah (scope) zprávy `std.log`
 podporuje, takže filtrování podle úrovně zůstává.
+
+Vlastní `logFn` v `std_options` je krátký (asi 25 řádků) a dělá přesně to, co
+chceme: zapisuje na standardní výstup jeden řádek na zprávu ve tvaru
+`info(scope): zpráva klic=hodnota`. Úroveň logování jde stejně jako v Rust
+verzi změnit proměnnou prostředí `LOG_LEVEL`. Protože `std.log` filtruje
+úroveň už při překladu, propouštíme za překladu všechno (`.log_level = .debug`)
+a filtrujeme až za běhu ve vlastní `logFn`. Do stejného logu jdou i zprávy
+z DVUI a SDL, což je příjemné. Vlákno pro zápis do souboru a rotace denních
+souborů, které Rust verze měla díky `tracing-appender`, odpadly, protože se
+loguje jen na standardní výstup.
+
+## Oddělení DSP od uživatelského rozhraní
+
+**Lepší.** V Rust verzi bylo pravidlo „`src/dsp/` nesmí záviset na egui“ jen
+dohoda: všechno byl jeden crate a `use egui` by v `src/dsp/` prošlo.
+V Zigu je DSP samostatný modul (`src/dsp/dsp.zig`), kterému `build.zig`
+nepředá import `dvui`. Pokus o `@import("dvui")` v DSP skončí chybou
+překladu. Testy DSP (`zig build test`) se navíc překládají a běží bez DVUI
+a bez SDL, takže jsou rychlé. V Rustu by stejného výsledku šlo dosáhnout
+rozdělením na dva crates ve workspace, ale bylo by to pracnější.
+
+## Stabilita jazyka
+
+**Horší.** Rust edice 2024 a stabilní toolchain zaručují, že kód napsaný
+dnes se přeloží i novější verzí. Zig před verzí 1.0 mění API mezi verzemi
+a návody na internetu bývají pro starší verze. Už při psaní kostry:
+
+- `std.meta.fields` je v Zigu 0.17 zrušené (`@compileError`) a struktura
+  `@typeInfo` pro enum se změnila (`field_names` místo `fields`).
+- `b.args` v `build.zig` zmizelo, argumenty pro `zig build run -- …` se teď
+  předávají voláním `run_cmd.addPassthruArgs()`.
+- Funkce `main` dostává `std.process.Init` (alokátor, `Io`, proměnné
+  prostředí). DVUI ho zpřístupňuje jako `dvui.App.main_init`.
+
+Pomáhá, že překladač hlásí zrušené funkce srozumitelnou chybou a že zdrojáky
+standardní knihovny se dobře čtou.

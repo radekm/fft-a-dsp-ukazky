@@ -1,0 +1,13 @@
+.{
+    .name = .fft_dsp_demos,
+    .version = "0.2.0",
+    .fingerprint = 0x592583aedd076f4d,
+    .minimum_zig_version = "0.17.1",
+    .dependencies = .{
+        .dvui = .{
+            .url = "git+https://github.com/david-vanderson/dvui#485a1ed8d155fc38759713dad3f039de213e46cc",
+            .hash = "dvui-0.6.0-dev-AQFJmbu5BAF4Li_HMImGyz72tPfF-xJctE49VKzsvpia",
+        },
+    },
+    .paths = .{ "build.zig", "build.zig.zon", "src" },
+}

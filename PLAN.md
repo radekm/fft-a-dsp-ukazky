@@ -127,7 +127,7 @@ Rust verze je předloha: stejné záložky, ovládání, výchozí hodnoty a č�
       založení `PREPIS-DO-ZIGU-Z-RUSTU.md`.
 - [x] Ověření prostředí: Zig 0.17.1, DVUI se systémovým SDL3, české znaky
       písmem Inter.
-- [ ] Kostra: `build.zig`, `build.zig.zon`, okno se záložkami, motiv
+- [x] Kostra: `build.zig`, `build.zig.zon`, okno se záložkami, motiv
       s písmem Inter, logování, kontroly `zig fmt` a `zig build test`.
 - [ ] DSP: `complex`, `signal`, `fft`, `spectrum`, `window`, `filter`,
       `sampling` včetně všech testů z Rust verze.
