@@ -321,7 +321,7 @@ egui_plot uměl, u vlastního widgetu se to doplní pár řádky.
 
 Výsledek odpovídá Rust verzi: výchozí 5 Hz při fs = 40 Hz, po nastavení
 35 Hz se složka jeví jako 5,000 Hz (alias, červeně), rekonstrukce je
-otočená sinusovka 5 Hz. Kód má 352 řádků (Rust 401).
+otočená sinusovka 5 Hz. Kód má 361 řádků (Rust 401).
 
 **Srovnatelné – iterátory a pole.** Rust verze skládala body grafů řetězci
 iterátorů (`map`, `filter`, `collect`). V Zigu jsou to obyčejné cykly do
