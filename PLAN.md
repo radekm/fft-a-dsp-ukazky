@@ -28,6 +28,7 @@ fáze 7. Rust verze je v `last-rust-version/` a slouží jako předloha.
 
 ```
 build.zig, build.zig.zon
+.github/workflows/pages.yml  nasazení webové verze na GitHub Pages
 web/index.html     stránka webové verze (upravená z DVUI)
 src/
   main.zig         spuštění DVUI aplikace, logování, motiv a písmo
@@ -158,6 +159,7 @@ Tentýž program v prohlížeči. Desktopová verze se nemění.
 - [x] Vyzkoušení všech záložek v prohlížeči a porovnání čísel s desktopem.
 - [x] `README.md` (sestavení a spuštění) a oddíl o webové verzi
       v `PREPIS-DO-ZIGU-Z-RUSTU.md`.
+- [ ] Nasazení na GitHub Pages (workflow `.github/workflows/pages.yml`).
 
 ## Možná později (mimo první verzi)
 

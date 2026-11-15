@@ -33,6 +33,9 @@ Přeložený program je pak v `zig-out/bin/fft-dsp-demos`.
 
 ## Webová verze
 
+Webová verze běží na https://radekm.github.io/fft-a-dsp-ukazky/ (nasazuje
+ji workflow `.github/workflows/pages.yml` po každém pushi do `main`).
+
 Tentýž program jde přeložit do WebAssembly a spustit v prohlížeči
 (webový backend DVUI, kreslí přes WebGL). SDL3 k tomu potřeba není.
 
