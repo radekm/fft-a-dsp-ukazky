@@ -22,7 +22,7 @@ během přepisu.
 | DSP – správa paměti | horší i lepší | explicitní alokátor a `defer free` všude; testy ale samy hlídají úniky |
 | DSP – chybné vstupy | lepší | chyba v návratovém typu (`error.LengthNotPowerOfTwo`) místo paniky |
 | Převody čísel | horší | `@floatFromInt` u každého převodu `usize` → `f64` |
-| Grafy | horší | egui_plot dal grafy zadarmo, v Zigu vlastní widget (asi 690 řádků) |
+| Grafy | horší | egui_plot dal grafy zadarmo, v Zigu vlastní widget (asi 780 řádků) |
 | Stabilita jazyka | horší | API standardní knihovny a build systému se mezi verzemi Zigu mění |
 
 ## Sestavení a závislosti
@@ -187,7 +187,7 @@ se nastavil několika řádky (`Plot::new(...).legend(...).link_axis(...)`)
 a přibližování, posun, legenda, mřížka i dílky os fungovaly samy. Graf
 v DVUI (`dvui.plot`) umí jen osy, čáry, sloupce a jednoduchý popisek;
 chybí přibližování a posun, legenda, propojené osy a čárkované čáry.
-Proto vznikl vlastní widget: asi 690 řádků v jednom souboru.
+Proto vznikl vlastní widget: asi 780 řádků v jednom souboru.
 
 Co widget umí (stejně jako grafy v Rust verzi):
 - lomené čáry, body se stonky, svislé (i čárkované) čáry, barvy a tloušťky,
