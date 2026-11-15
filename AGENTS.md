@@ -25,18 +25,27 @@ předloha. Pravidla níže platí pro verzi v Zigu v kořeni repozitáře.
 ## Technologie
 
 - Jazyk: Zig 0.17.1.
-- GUI: DVUI s backendem SDL3.
+- GUI: DVUI s backendem SDL3 (desktop) a webovým backendem (prohlížeč).
 - Grafy: vlastní widget nad kreslicími funkcemi DVUI (`src/ui/plot.zig`).
 - Chyby: chybové typy Zigu (`error{...}`, `try`, `errdefer`).
-- Logování: `std.log` na standardní výstup.
+- Logování: `std.log` na standardní výstup (na webu do konzole prohlížeče).
 - Písmo: Inter (běžný a tučný řez), vložené do programu přes `@embedFile`.
-- Cílová platforma: nativní desktopová aplikace.
+- Cílová platforma: nativní desktopová aplikace a WebAssembly v prohlížeči
+  (`wasm32-freestanding`, krok `zig build web`). Desktopová verze je hlavní,
+  webová ji nesmí rozbít.
 
 ## Povolené závislosti
 
 - `dvui` v `build.zig.zon`, připnutý na commit
   `485a1ed8d155fc38759713dad3f039de213e46cc`, s volbami
   `.backend = .sdl3` a `.@"tree-sitter" = false`.
+- Webová verze: tentýž `dvui` (stejný commit) ještě jednou, s volbami
+  `.backend = .web` a `.@"tree-sitter" = false`, pro cíl
+  `wasm32-freestanding`. Volby pro desktop zůstávají beze změny.
+- Soubory, které DVUI pro web přibaluje: `src/backends/web.js` (instaluje
+  se beze změny), `src/backends/index.html` (náš upravený `web/index.html`),
+  `src/cacheBuster.zig` (doplní otisk souborů do `index.html`)
+  a `tools/serve_web_demo.zig` (malý HTTP server pro `zig build serve-web`).
 - Balíčky, které DVUI s těmito volbami samo stáhne (např. `translate_c`,
   `freetype`, `svg2tvg`). Neuvádějí se v našem `build.zig.zon`.
 - Systémová knihovna SDL3, linkovaná dynamicky. `build.zig` zapíná systémové
@@ -71,7 +80,8 @@ předloha. Pravidla níže platí pro verzi v Zigu v kořeni repozitáře.
   `klic=hodnota`, aby šly snadno vyhledat:
   - Správně: `log.info("spectrum computed fft_size={d} sample_rate_hz={d}", .{ fft_size, sample_rate_hz })`
   - Špatně: `log.info("computed spectrum of {d} samples", .{fft_size})`
-- Log jde na standardní výstup. Události, které mohou nastat v každém snímku,
+- Log jde na standardní výstup, na webu do konzole prohlížeče
+  (`dvui.App.logFn`). Události, které mohou nastat v každém snímku,
   mají úroveň `debug`.
 - Jen syntetické signály; práce se zvukem (mikrofon, přehrávání, WAV) není
   součástí programu.
@@ -84,6 +94,7 @@ Každá změna musí projít:
 zig fmt --check build.zig build.zig.zon src
 zig build
 zig build test
+zig build web
 ```
 
 - DSP funkce mají jednotkové testy (např. FFT proti pomalé DFT, FFT a zpětná
