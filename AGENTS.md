@@ -46,6 +46,10 @@ předloha. Pravidla níže platí pro verzi v Zigu v kořeni repozitáře.
   se beze změny), `src/backends/index.html` (náš upravený `web/index.html`),
   `src/cacheBuster.zig` (doplní otisk souborů do `index.html`)
   a `tools/serve_web_demo.zig` (malý HTTP server pro `zig build serve-web`).
+- GitHub Actions (jen workflow `.github/workflows/pages.yml`, které webovou
+  verzi nasazuje na GitHub Pages): oficiální akce `actions/checkout`,
+  `actions/upload-pages-artifact` a `actions/deploy-pages`. Zig se stahuje
+  přímo z ziglang.org a ověřuje se jeho SHA-256. Jiné akce nepřidávat.
 - Balíčky, které DVUI s těmito volbami samo stáhne (např. `translate_c`,
   `freetype`, `svg2tvg`). Neuvádějí se v našem `build.zig.zon`.
 - Systémová knihovna SDL3, linkovaná dynamicky. `build.zig` zapíná systémové

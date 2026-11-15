@@ -1,0 +1,58 @@
+# Sestaví webovou verzi (WebAssembly) a nasadí ji na GitHub Pages.
+# V nastavení repozitáře musí být Settings → Pages → Source: „GitHub Actions“.
+name: Web na GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Ruční spuštění (záložka Actions → „Run workflow“).
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Běží nanejvýš jedno nasazení najednou; rozběhnuté se nepřeruší.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  ZIG_VERSION: 0.17.1
+  # SHA-256 archivu zig-x86_64-linux-0.17.1.tar.xz z ziglang.org.
+  ZIG_SHA256: 3581863e3cbcfd0fce0efc682ce7e9e93da96668a977791d356a26d2a7e9b17a
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Zig stahujeme přímo z ziglang.org a ověříme otisk, bez cizí akce.
+      - name: Install Zig
+        run: |
+          archive="zig-x86_64-linux-${ZIG_VERSION}.tar.xz"
+          curl -sSfL -o "$archive" "https://ziglang.org/download/${ZIG_VERSION}/${archive}"
+          echo "${ZIG_SHA256}  ${archive}" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/zig"
+          tar -xf "$archive" -C "$RUNNER_TEMP/zig" --strip-components=1
+          echo "$RUNNER_TEMP/zig" >> "$GITHUB_PATH"
+
+      # Webová verze nepotřebuje SDL3, závislosti (DVUI) stáhne Zig sám.
+      - name: Build web version
+        run: zig build web -Doptimize=ReleaseSmall
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: zig-out/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
